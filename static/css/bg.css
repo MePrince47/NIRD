@@ -1,0 +1,57 @@
+.btn-nird {
+    position: relative;
+    display: inline-block;
+    padding: 0;
+    width: 2.5rem;
+    aspect-ratio: 1 / 1 ;
+}
+.btn-nird::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4rem;
+    height: 4rem;
+    background: url('../../dist/img/corris.png') no-repeat center / contain;
+    transform: translate(-50%, -50%);
+}
+.btn-nird span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font: 1.5rem/1 'Arial', sans-serif;
+    text-shadow: 0 0 3px #333;
+    font-style: italic;
+    font-weight: bolder;
+}
+
+.btn-nird:hover::before {
+    animation: nird-spin 1s linear infinite;
+}
+@keyframes nird-spin {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.path {
+    fill: none;
+    stroke: #444;
+    stroke-width: 10;
+    stroke-linecap: round;
+}
+
+.player {
+    fill: red;
+    stroke: white;
+    stroke-width: 3;
+}
