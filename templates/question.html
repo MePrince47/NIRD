@@ -1,0 +1,24 @@
+<h2>{{ question.text }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {% for answer in question.answers %}
+    <input type="radio" name="answer" value="{{ forloop.counter0 }}"> {{ answer }}<br>
+  {% endfor %}
+  <button type="submit">Valider</button>
+</form>
+
+<p>Temps restant : <span id="timer">{{ time_limit }}</span> secondes</p>
+
+<script>
+let timeLeft = 30; // à modifier selon le temps imparti
+let timerElem = document.getElementById("timer");
+let timer = setInterval(() => {
+    timeLeft--;
+    timerElem.innerText = timeLeft;
+    if(timeLeft <= 0){
+        clearInterval(timer);
+        document.forms[0].submit(); // auto submit quand le temps est écoulé
+    }
+}, 1000);
+</script>

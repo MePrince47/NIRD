@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résultat</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+    <h1>Résultat du Quiz : {{ attempt.quiz.title }}</h1>
+
+    <p>Utilisateur : {{ attempt.user.username }}</p>
+    <p>Score total : {{ attempt.score }}</p>
+
+    <h2>Détails des réponses :</h2>
+    <ul>
+        {% for answer in attempt.answers.all %}
+            <li>
+                Question : {{ answer.question.text }} <br>
+                Votre réponse : {{ answer.question.answers|slice:answer.selected_index|first }} <br>
+                Correct : {{ answer.correct }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'home' %}">Retour à l'accueil</a>
+</body>
+</html>
