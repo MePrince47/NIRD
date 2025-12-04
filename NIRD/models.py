@@ -1,11 +1,14 @@
 from django.db import models
 from django.db.models import JSONField
+from django.contrib.auth.models import User
+
+
 
 
 class Quiz(models.Model):
  
     title = models.CharField(max_length=255)
-    level = models.PositiveIntegerField(default=1)  # Niveau du quiz (1,2,3...)
+    level = models.PositiveIntegerField(default=1)  
 
     def __str__(self):
         return f"{self.title} (Niveau {self.level})"
@@ -34,3 +37,19 @@ class Question(models.Model):
 
     def __str__(self):
         return f"{self.text[:50]}"
+
+class UserQuizAttempt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.PositiveIntegerField(default=0)
+    completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.title}"
+
+
+class UserAnswer(models.Model):
+    attempt = models.ForeignKey(UserQuizAttempt, on_delete=models.CASCADE, related_name="answers")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_index = models.PositiveIntegerField()
+    correct = models.BooleanField(default=False)
