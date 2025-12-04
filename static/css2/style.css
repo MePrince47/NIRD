@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background: #f2f2f7;
+}
+
+/* Avatar */
+.avatar-container {
+    position: absolute;
+    top: 50px;
+    left: -200px; /* hors de l'écran */
+    animation: slideIn 1s forwards;
+}
+
+@keyframes slideIn {
+    to {
+        left: 30px;
+    }
+}
+
+.avatar {
+    width: 180px;
+    height: auto;
+}
+
+/* Zone quiz */
+.quiz-box {
+    margin-top: 250px;
+    padding: 20px;
+    width: 80%;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.avatar-text {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+    color: #333;
+}
+
+.question-box {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #222;
+}
+
+.answers button {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #ececec;
+    transition: 0.2s ease;
+    font-size: 1rem;
+}
+
+.answers button:hover {
+    background: #d1d1d1;
+}
+.avatar {
+    width: 80px;   /* Taille plus petite */
+    height: auto;
+}
+
