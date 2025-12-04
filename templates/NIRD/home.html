@@ -3,29 +3,182 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Quiz NIRD</title>
-     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIRD - Maîtrisez l'Art de l'Apprentissage</title>
+    <link rel="stylesheet" href="{% static 'css/nird-style.css' %}">
 </head>
 <body>
-    <h1 class="title ">Bienvenue aux Quiz NIRD</h1>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎯 NIRD</div>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span class="user-name">👋 {{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline">Se déconnecter</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">Se connecter</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
 
-    {% if user.is_authenticated %}
-        <p>Bonjour, {{ user.username }} !</p>
-        <a href="">Se déconnecter</a>
-    {% else %}
-        <a href="{% url 'login' %}">Se connecter</a>
-    {% endif %}
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Le Village Numérique Résistant</h1>
+        <p class="hero-subtitle">Comment les établissements scolaires peuvent tenir tête aux Big Tech ?</p>
+        
+        <!-- NIRD Explanation -->
+        <div class="nird-explanation">
+            <h2>🛡️ Qu'est-ce que la démarche NIRD ?</h2>
+            <p>Face à l'empire numérique des Big Tech (matériel obsolète, licences coûteuses, données hors UE...), 
+            l'École peut devenir un village résistant, à l'image d'Astérix. NIRD permet aux établissements d'adopter 
+            progressivement un <strong>Numérique Inclusif, Responsable et Durable</strong>.</p>
+            
+            <div class="nird-steps">
+                <div class="nird-step">
+                    <div class="step-icon noter">N</div>
+                    <div class="step-content">
+                        <h3>Numérique</h3>
+                        <p>Un numérique libre et ouvert, basé sur les logiciels libres et les communs numériques</p>
+                    </div>
+                </div>
+                
+                <div class="nird-step">
+                    <div class="step-icon identifier">I</div>
+                    <div class="step-content">
+                        <h3>Inclusif</h3>
+                        <p>Accessible à tous, sans discrimination, favorisant l'autonomie et la participation</p>
+                    </div>
+                </div>
+                
+                <div class="nird-step">
+                    <div class="step-icon reviser">R</div>
+                    <div class="step-content">
+                        <h3>Responsable</h3>
+                        <p>Éthique, respectueux des données personnelles et de la vie privée des utilisateurs</p>
+                    </div>
+                </div>
+                
+                <div class="nird-step">
+                    <div class="step-icon developper">D</div>
+                    <div class="step-content">
+                        <h3>Durable</h3>
+                        <p>Sobre, écologique, luttant contre l'obsolescence programmée et favorisant le réemploi</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border-left: 4px solid var(--libre-green);">
+                <p style="font-size: 1.1rem; line-height: 1.6;">
+                    <strong>🎯 Notre mission :</strong> Sensibiliser élèves, enseignants, familles et collectivités 
+                    à réduire leurs dépendances numériques et entrer dans la démarche NIRD de manière progressive, 
+                    réaliste et motivante.
+                </p>
+            </div>
+        </div>
+    </section>
 
-    <h2>Choisissez un quiz :</h2>
-    <ul>
-        {% for quiz in quizzes %}
-            <li>
-                {{ quiz.title }} (Niveau {{ quiz.level }}) - 
-                <a href="{% url 'start_quiz' quiz.id %}">Commencer</a>
-            </li>
-        {% empty %}
-            <li>Aucun quiz disponible pour le moment.</li>
-        {% endfor %}
-    </ul>
+    <!-- Levels Section -->
+    <section class="levels-section">
+        <h2 class="section-title">🎮 Parcours de Résistance Numérique</h2>
+        
+        <div class="levels-grid">
+            {% for quiz in quizzes %}
+                <div class="level-card {% if not user.is_authenticated %}locked{% endif %}">
+                    <div class="level-header">
+                        <div class="level-number">{{ quiz.level }}</div>
+                        <div class="level-badge {% if quiz.level == 1 %}badge-debutant{% elif quiz.level == 2 %}badge-intermediaire{% elif quiz.level == 3 %}badge-avance{% else %}badge-expert{% endif %}">
+                            {% if quiz.level == 1 %}
+                                🌱 Débutant
+                            {% elif quiz.level == 2 %}
+                                ⚡ Intermédiaire
+                            {% elif quiz.level == 3 %}
+                                🔥 Avancé
+                            {% elif quiz.level == 4 %}
+                                💎 Expert
+                            {% elif quiz.level == 5 %}
+                                👑 Maître
+                            {% else %}
+                                🏆 Légende
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h3 class="level-title">{{ quiz.title }}</h3>
+                    <p class="level-description">
+                        {% if quiz.level == 1 %}
+                            Découvrez les enjeux de la dépendance numérique et les bases de la démarche NIRD.
+                        {% elif quiz.level == 2 %}
+                            Explorez les alternatives libres et comprenez l'obsolescence programmée.
+                        {% elif quiz.level == 3 %}
+                            Maîtrisez les solutions concrètes pour un numérique responsable et durable.
+                        {% elif quiz.level == 4 %}
+                            Devenez expert en transition numérique et autonomie technologique.
+                        {% elif quiz.level == 5 %}
+                            Pilotez la transformation NIRD de votre établissement.
+                        {% else %}
+                            Rejoignez les pionniers de la résistance numérique éducative !
+                        {% endif %}
+                    </p>
+                    
+                    <div class="level-stats">
+                        <div class="stat">
+                            <span class="stat-icon">📝</span>
+                            <span>{{ quiz.questions.count }} questions</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⏱️</span>
+                            <span>~{{ quiz.questions.count|add:"0" }} min</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⭐</span>
+                            <span>{{ quiz.questions.count|add:"0" }} points max</span>
+                        </div>
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- Progress bar (can be dynamic later) -->
+                        <div class="level-progress">
+                            <div class="progress-label">
+                                <span>Progression</span>
+                                <span>0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="level-actions">
+                            <a href="{% url 'start_quiz' quiz.id %}" class="btn-start">
+                                🚀 Commencer le niveau
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="level-actions">
+                            <a href="{% url 'login' %}" class="btn-start locked">
+                                <span class="lock-icon">🔒</span> Connectez-vous pour débloquer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="level-card">
+                    <h3 class="level-title">Aucun quiz disponible</h3>
+                    <p class="level-description">Les quiz seront bientôt disponibles. Revenez plus tard !</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🛡️ NIRD - Numérique Inclusif, Responsable et Durable</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Un projet du collectif enseignant NIRD - Nuit de l'Info 2025</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+            <a href="https://nird.forge.apps.education.fr/" target="_blank" style="color: var(--primary-color); text-decoration: none;">Site officiel NIRD</a> | 
+            Forge des communs numériques éducatifs
+        </p>
+    </footer>
 </body>
 </html>
