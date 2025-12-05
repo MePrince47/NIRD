@@ -6,7 +6,11 @@
     --card-bg: #1e293b;
     --text-light: #f1f5f9;
     --text-muted: #94a3b8;
+    --text-primary: #1e293b;
+    --bg-secondary: #f1f5f9;
+    --primary-light: #d1fae5;
     --success: #10b981;
+    --success-color: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --locked: #475569;

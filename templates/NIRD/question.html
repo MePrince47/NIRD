@@ -3,34 +3,247 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Question</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question - NIRD Quiz</title>
+    <link rel="stylesheet" href="{% static 'css/nird-style.css' %}">
+    <style>
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .timer-box {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .answers-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .answer-option {
+            position: relative;
+        }
+        
+        .answer-option input[type="radio"] {
+            display: none;
+        }
+        
+        .answer-label {
+            display: block;
+            padding: 1.5rem;
+            background: #f1f5f9;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .answer-label:hover {
+            background: #d1fae5;
+            border-color: #10b981;
+            transform: translateX(10px);
+        }
+        
+        .answer-option input[type="radio"]:checked + .answer-label {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.4);
+        }
+        
+        .tip-bubble {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            max-width: 350px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+            z-index: 1000;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .tip-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tip-text {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .progress-indicator {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
 <body>
-    <h2>{{ question.text }}</h2>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎯 NIRD Quiz</div>
+            <nav style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'home' %}" class="btn btn-outline">🏠 Quiz</a>
+                <a href="{% url 'leaderboard' %}" class="btn btn-outline">🏆 Classement</a>
+                <a href="{% url 'social_feed' %}" class="btn btn-outline">💬 Communauté</a>
+            </nav>
+            <div class="user-info">
+                <span class="user-name">{{ user.profile.avatar_emoji }} {{ user.username }}</span>
+                <a href="{% url 'user_profile' user.username %}" class="btn btn-outline">👤 Profil</a>
+            </div>
+        </div>
+    </header>
 
-    <form method="post">
-        {% csrf_token %}
-        {% for answer in question.answers %}
-            <input type="radio" name="answer" value="{{ forloop.counter0 }}"> {{ answer }}<br>
-        {% endfor %}
-        <button type="submit">Valider</button>
-    </form>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <div class="progress-indicator">
+                Question {{ answered_count|add:"1" }}
+            </div>
+            <div class="timer-box">
+                ⏱️ <span id="timer">{{ time_limit }}</span>s
+            </div>
+        </div>
 
-    <p>Temps restant : <span id="timer">{{ time_limit }}</span> secondes</p>
+        <div class="question-card">
+            <div class="question-text">{{ question.text }}</div>
+
+            <form method="post" id="quizForm">
+                {% csrf_token %}
+                <div class="answers-grid">
+                    {% for answer in question.answers %}
+                        <div class="answer-option">
+                            <input type="radio" name="answer" value="{{ forloop.counter0 }}" id="answer{{ forloop.counter0 }}" required>
+                            <label for="answer{{ forloop.counter0 }}" class="answer-label">
+                                {{ answer }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="submit-btn">✅ Valider ma réponse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulle d'info fun -->
+    {% if quiz_tip %}
+    <div class="tip-bubble" id="tipBubble">
+        <div class="tip-icon">{{ quiz_tip.icon }}</div>
+        <div class="tip-text">{{ quiz_tip.text }}</div>
+    </div>
+    {% endif %}
 
     <script>
-        let timeLeft = 30;
+        let timeLeft = {{ time_limit }};
         let timerElem = document.getElementById("timer");
+        let form = document.getElementById("quizForm");
+        
         let timer = setInterval(() => {
             timeLeft--;
             timerElem.innerText = timeLeft;
+            
+            // Changement de couleur quand le temps est presque écoulé
+            if(timeLeft <= 10) {
+                timerElem.parentElement.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            }
+            
             if(timeLeft <= 0){
                 clearInterval(timer);
-                document.forms[0].submit(); // auto submit
+                // Auto-submit si aucune réponse n'est sélectionnée
+                const selected = form.querySelector('input[name="answer"]:checked');
+                if(!selected) {
+                    // Sélectionner la première réponse par défaut
+                    form.querySelector('input[name="answer"]').checked = true;
+                }
+                form.submit();
             }
         }, 1000);
+        
+        // Fermer la bulle d'info après 8 secondes
+        {% if quiz_tip %}
+        setTimeout(() => {
+            const bubble = document.getElementById('tipBubble');
+            if(bubble) {
+                bubble.style.animation = 'slideIn 0.5s ease-out reverse';
+                setTimeout(() => bubble.remove(), 500);
+            }
+        }, 8000);
+        {% endif %}
     </script>
 </body>
 </html>

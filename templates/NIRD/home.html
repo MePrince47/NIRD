@@ -12,9 +12,17 @@
     <header class="header">
         <div class="header-content">
             <div class="logo">🎯 NIRD</div>
+            {% if user.is_authenticated %}
+            <nav style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'home' %}" class="btn btn-primary">🏠 Quiz</a>
+                <a href="{% url 'leaderboard' %}" class="btn btn-outline">🏆 Classement</a>
+                <a href="{% url 'social_feed' %}" class="btn btn-outline">💬 Communauté</a>
+            </nav>
+            {% endif %}
             <div class="user-info">
                 {% if user.is_authenticated %}
-                    <span class="user-name">👋 {{ user.username }}</span>
+                    <span class="user-name">{{ user_profile.avatar_emoji }} {{ user.username }}</span>
+                    <span style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Niv. {{ user_profile.level }}</span>
                     <a href="{% url 'logout' %}" class="btn btn-outline">Se déconnecter</a>
                 {% else %}
                     <a href="{% url 'login' %}" class="btn btn-primary">Se connecter</a>
@@ -23,60 +31,21 @@
         </div>
     </header>
 
+    <!-- Messages Django -->
+    {% if messages %}
+        <div style="max-width: 1200px; margin: 2rem auto; padding: 0 2rem;">
+            {% for message in messages %}
+                <div style="background: {% if message.tags == 'warning' %}linear-gradient(135deg, #f59e0b, #d97706){% elif message.tags == 'success' %}linear-gradient(135deg, #10b981, #059669){% else %}linear-gradient(135deg, #3b82f6, #2563eb){% endif %}; color: white; padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <span style="font-size: 1.5rem;">{% if message.tags == 'warning' %}⚠️{% elif message.tags == 'success' %}✅{% else %}ℹ️{% endif %}</span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- Hero Section -->
     <section class="hero">
         <h1>Le Village Numérique Résistant</h1>
-        <p class="hero-subtitle">Comment les établissements scolaires peuvent tenir tête aux Big Tech ?</p>
-        
-        <!-- NIRD Explanation -->
-        <div class="nird-explanation">
-            <h2>🛡️ Qu'est-ce que la démarche NIRD ?</h2>
-            <p>Face à l'empire numérique des Big Tech (matériel obsolète, licences coûteuses, données hors UE...), 
-            l'École peut devenir un village résistant, à l'image d'Astérix. NIRD permet aux établissements d'adopter 
-            progressivement un <strong>Numérique Inclusif, Responsable et Durable</strong>.</p>
-            
-            <div class="nird-steps">
-                <div class="nird-step">
-                    <div class="step-icon noter">N</div>
-                    <div class="step-content">
-                        <h3>Numérique</h3>
-                        <p>Un numérique libre et ouvert, basé sur les logiciels libres et les communs numériques</p>
-                    </div>
-                </div>
-                
-                <div class="nird-step">
-                    <div class="step-icon identifier">I</div>
-                    <div class="step-content">
-                        <h3>Inclusif</h3>
-                        <p>Accessible à tous, sans discrimination, favorisant l'autonomie et la participation</p>
-                    </div>
-                </div>
-                
-                <div class="nird-step">
-                    <div class="step-icon reviser">R</div>
-                    <div class="step-content">
-                        <h3>Responsable</h3>
-                        <p>Éthique, respectueux des données personnelles et de la vie privée des utilisateurs</p>
-                    </div>
-                </div>
-                
-                <div class="nird-step">
-                    <div class="step-icon developper">D</div>
-                    <div class="step-content">
-                        <h3>Durable</h3>
-                        <p>Sobre, écologique, luttant contre l'obsolescence programmée et favorisant le réemploi</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border-left: 4px solid var(--libre-green);">
-                <p style="font-size: 1.1rem; line-height: 1.6;">
-                    <strong>🎯 Notre mission :</strong> Sensibiliser élèves, enseignants, familles et collectivités 
-                    à réduire leurs dépendances numériques et entrer dans la démarche NIRD de manière progressive, 
-                    réaliste et motivante.
-                </p>
-            </div>
-        </div>
     </section>
 
     <!-- Levels Section -->
@@ -85,7 +54,7 @@
         
         <div class="levels-grid">
             {% for quiz in quizzes %}
-                <div class="level-card {% if not user.is_authenticated %}locked{% endif %}">
+                <div class="level-card {% if not user.is_authenticated or quiz.level > user_profile.level %}locked{% endif %}">
                     <div class="level-header">
                         <div class="level-number">{{ quiz.level }}</div>
                         <div class="level-badge {% if quiz.level == 1 %}badge-debutant{% elif quiz.level == 2 %}badge-intermediaire{% elif quiz.level == 3 %}badge-avance{% else %}badge-expert{% endif %}">
@@ -150,9 +119,15 @@
                         </div>
                         
                         <div class="level-actions">
-                            <a href="{% url 'start_quiz' quiz.id %}" class="btn-start">
-                                🚀 Commencer le niveau
-                            </a>
+                            {% if quiz.level > user_profile.level %}
+                                <button class="btn-start locked" disabled>
+                                    <span class="lock-icon">🔒</span> Niveau {{ quiz.level }} requis
+                                </button>
+                            {% else %}
+                                <a href="{% url 'start_quiz' quiz.id %}" class="btn-start">
+                                    🚀 Commencer le niveau
+                                </a>
+                            {% endif %}
                         </div>
                     {% else %}
                         <div class="level-actions">

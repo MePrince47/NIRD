@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil de {{ profile_user.username }} - NIRD</title>
+    <link rel="stylesheet" href="{% static 'css/nird-style.css' %}">
+    <style>
+        .profile-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .profile-avatar {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-username {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-level {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .quiz-attempt {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quiz-attempt-info {
+            flex: 1;
+        }
+        
+        .quiz-attempt-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quiz-attempt-score {
+            background: var(--success-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .post-preview {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-preview-content {
+            margin-bottom: 0.5rem;
+        }
+        
+        .post-preview-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎯 NIRD</div>
+            <nav style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'home' %}" class="btn btn-outline">🏠 Quiz</a>
+                <a href="{% url 'leaderboard' %}" class="btn btn-outline">🏆 Classement</a>
+                <a href="{% url 'social_feed' %}" class="btn btn-outline">💬 Communauté</a>
+            </nav>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span class="user-name">{{ user.profile.avatar_emoji }} {{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline">Se déconnecter</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="profile-container">
+        <!-- En-tête du profil -->
+        <div class="profile-header">
+            <div class="profile-avatar">{{ profile.avatar_emoji }}</div>
+            <div class="profile-username">{{ profile_user.username }}</div>
+            <div class="profile-level">⭐ Niveau {{ profile.level }} • {{ profile.total_points }} points</div>
+            {% if profile.bio %}
+            <div style="margin-top: 1rem; font-size: 1.1rem; opacity: 0.9;">
+                {{ profile.bio }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">{{ attempts.count }}</div>
+                <div class="stat-label">Quiz complétés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">{{ profile.total_points }}</div>
+                <div class="stat-label">Points totaux</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">{{ profile.level }}</div>
+                <div class="stat-label">Niveau actuel</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-value">{{ posts.count }}</div>
+                <div class="stat-label">Publications</div>
+            </div>
+        </div>
+        
+        <!-- Quiz complétés -->
+        <div class="section-card">
+            <div class="section-title">🎯 Quiz complétés</div>
+            {% for attempt in attempts %}
+            <div class="quiz-attempt">
+                <div class="quiz-attempt-info">
+                    <div class="quiz-attempt-title">{{ attempt.quiz.title }}</div>
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">
+                        Niveau {{ attempt.quiz.level }}
+                    </div>
+                </div>
+                <div class="quiz-attempt-score">
+                    ⭐ {{ attempt.score }} points
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                Aucun quiz complété pour le moment
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Publications récentes -->
+        <div class="section-card">
+            <div class="section-title">💬 Publications récentes</div>
+            {% for post in posts %}
+            <div class="post-preview">
+                <div class="post-preview-content">{{ post.content }}</div>
+                <div class="post-preview-date">
+                    {{ post.created_at|timesince }} ago • 
+                    ❤️ {{ post.like_count }} • 
+                    💬 {{ post.comment_count }}
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                Aucune publication pour le moment
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Badges et accomplissements -->
+        <div class="section-card">
+            <div class="section-title">🏆 Badges et accomplissements</div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                {% if attempts.count > 0 %}
+                <div style="background: var(--primary-light); padding: 1rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 2rem;">🎯</div>
+                    <div style="font-size: 0.9rem; font-weight: 600;">Premier Quiz</div>
+                </div>
+                {% endif %}
+                
+                {% if attempts.count >= 5 %}
+                <div style="background: var(--primary-light); padding: 1rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 2rem;">🔥</div>
+                    <div style="font-size: 0.9rem; font-weight: 600;">5 Quiz</div>
+                </div>
+                {% endif %}
+                
+                {% if profile.level >= 5 %}
+                <div style="background: var(--primary-light); padding: 1rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 2rem;">⭐</div>
+                    <div style="font-size: 0.9rem; font-weight: 600;">Niveau 5</div>
+                </div>
+                {% endif %}
+                
+                {% if posts.count > 0 %}
+                <div style="background: var(--primary-light); padding: 1rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 2rem;">💬</div>
+                    <div style="font-size: 0.9rem; font-weight: 600;">Contributeur</div>
+                </div>
+                {% endif %}
+                
+                {% if not attempts.count and not posts.count %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted); width: 100%;">
+                    Complétez des quiz et participez à la communauté pour débloquer des badges !
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🛡️ NIRD - Numérique Inclusif, Responsable et Durable</p>
+    </footer>
+</body>
+</html>

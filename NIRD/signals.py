@@ -1,6 +1,7 @@
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
-from .models import Quiz, Question
+from django.contrib.auth.models import User
+from .models import Quiz, Question, UserQuizAttempt, UserProfile
 
 
 # Questions par niveau
@@ -398,3 +399,25 @@ def create_default_quizzes(sender, **kwargs):
                     points=q.get("points", 1),
                     time_limit=q.get("time_limit", 30)
                 )
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Crée automatiquement un profil pour chaque nouvel utilisateur"""
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Sauvegarde le profil utilisateur"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+
+
+@receiver(post_save, sender=UserQuizAttempt)
+def update_user_stats_on_quiz_complete(sender, instance, **kwargs):
+    """Met à jour les statistiques de l'utilisateur après un quiz"""
+    if instance.completed:
+        profile, created = UserProfile.objects.get_or_create(user=instance.user)
+        profile.update_stats()

@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - NIRD</title>
+    <link rel="stylesheet" href="{% static 'css/nird-style.css' %}">
+    <style>
+        .leaderboard-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .period-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: #10b981;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .user-rank-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .user-rank-card h2 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .leaderboard-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+        }
+        
+        .leaderboard-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 150px 150px;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--bg-secondary);
+            transition: background 0.3s ease;
+        }
+        
+        .leaderboard-row:hover {
+            background: var(--primary-light);
+        }
+        
+        .leaderboard-row.current-user {
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+            font-weight: 600;
+        }
+        
+        .rank-badge {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            color: #475569;
+        }
+        
+        .rank-badge.gold {
+            color: #f39c12;
+        }
+        
+        .rank-badge.silver {
+            color: #95a5a6;
+        }
+        
+        .rank-badge.bronze {
+            color: #cd7f32;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .player-avatar {
+            font-size: 2rem;
+        }
+        
+        .player-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .player-level {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+        
+        .points-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .quiz-count {
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎯 NIRD</div>
+            <nav style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'home' %}" class="btn btn-outline">🏠 Quiz</a>
+                <a href="{% url 'leaderboard' %}" class="btn btn-primary">🏆 Classement</a>
+                <a href="{% url 'social_feed' %}" class="btn btn-outline">💬 Communauté</a>
+            </nav>
+            <div class="user-info">
+                <span class="user-name">{{ user_profile.avatar_emoji }} {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="btn btn-outline">Se déconnecter</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="leaderboard-container">
+        <h1 style="text-align: center; margin-bottom: 2rem;">🏆 Classement des Résistants Numériques</h1>
+        
+        <!-- Filtres de période -->
+        <div class="period-filters">
+            <a href="?period=all" class="filter-btn {% if period == 'all' %}active{% endif %}">
+                🌍 Tous les temps
+            </a>
+            <a href="?period=month" class="filter-btn {% if period == 'month' %}active{% endif %}">
+                📅 Ce mois
+            </a>
+            <a href="?period=week" class="filter-btn {% if period == 'week' %}active{% endif %}">
+                📆 Cette semaine
+            </a>
+            <a href="?period=today" class="filter-btn {% if period == 'today' %}active{% endif %}">
+                ⭐ Aujourd'hui
+            </a>
+        </div>
+        
+        <!-- Carte du rang de l'utilisateur -->
+        {% if user_rank %}
+        <div class="user-rank-card">
+            <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Votre position</div>
+            <h2>🎯 #{{ user_rank }}</h2>
+            <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+                {{ user_profile.total_points }} points • Niveau {{ user_profile.level }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Tableau du classement -->
+        <div class="leaderboard-card">
+            <div class="leaderboard-table">
+                <!-- En-tête -->
+                <div class="leaderboard-row" style="background: var(--bg-secondary); font-weight: 600;">
+                    <div style="text-align: center;">Rang</div>
+                    <div>Joueur</div>
+                    <div style="text-align: center;">Points</div>
+                    <div style="text-align: center;">Quiz complétés</div>
+                </div>
+                
+                <!-- Lignes du classement -->
+                {% for profile in profiles %}
+                <div class="leaderboard-row {% if profile.user == user %}current-user{% endif %}">
+                    <div class="rank-badge {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+                        {% if forloop.counter == 1 %}
+                            🥇
+                        {% elif forloop.counter == 2 %}
+                            🥈
+                        {% elif forloop.counter == 3 %}
+                            🥉
+                        {% else %}
+                            #{{ forloop.counter }}
+                        {% endif %}
+                    </div>
+                    <div class="player-info">
+                        <div class="player-avatar">{{ profile.avatar_emoji }}</div>
+                        <div>
+                            <a href="{% url 'user_profile' profile.user.username %}" style="text-decoration: none; color: inherit;">
+                                <div class="player-name">
+                                    {{ profile.user.username }}
+                                    <span class="player-level">Niv. {{ profile.level }}</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="points-badge">
+                        ⭐ {{ profile.total_points }}
+                    </div>
+                    <div class="quiz-count">
+                        🎯 {{ profile.quiz_count }} quiz
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    <h3>Aucun joueur pour cette période</h3>
+                    <p>Soyez le premier à compléter un quiz !</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Encouragement -->
+        <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: var(--primary-light); border-radius: 20px;">
+            <h3>💪 Continuez à apprendre !</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                Complétez plus de quiz pour grimper dans le classement et devenir un expert NIRD !
+            </p>
+            <a href="{% url 'home' %}" class="btn btn-primary">🎮 Faire un quiz</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🛡️ NIRD - Numérique Inclusif, Responsable et Durable</p>
+    </footer>
+</body>
+</html>

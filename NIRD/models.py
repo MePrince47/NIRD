@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import JSONField
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 
@@ -53,3 +54,111 @@ class UserAnswer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     selected_index = models.PositiveIntegerField()
     correct = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.attempt.user.username} - Q{self.question.id}"
+
+
+class QuizTip(models.Model):
+    """Bulles d'info fun qui apparaissent pendant le quiz"""
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="tips")
+    text = models.TextField(help_text="Conseil ou info fun à afficher")
+    icon = models.CharField(max_length=10, default="💡", help_text="Emoji pour la bulle")
+    trigger_question_number = models.PositiveIntegerField(
+        default=1,
+        help_text="Numéro de la question après laquelle afficher ce tip"
+    )
+    
+    class Meta:
+        ordering = ['trigger_question_number']
+    
+    def __str__(self):
+        return f"{self.icon} {self.text[:50]}"
+
+
+class UserProfile(models.Model):
+    """Profil étendu pour les utilisateurs"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    bio = models.TextField(max_length=500, blank=True, help_text="Bio de l'utilisateur")
+    avatar_emoji = models.CharField(max_length=10, default="👤", help_text="Emoji avatar")
+    total_points = models.PositiveIntegerField(default=0)
+    level = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - Niveau {self.level}"
+    
+    def update_stats(self):
+        """Met à jour les statistiques de l'utilisateur"""
+        attempts = UserQuizAttempt.objects.filter(user=self.user, completed=True)
+        self.total_points = sum(attempt.score for attempt in attempts)
+        # Calcul du niveau basé sur les points
+        self.level = min(10, (self.total_points // 100) + 1)
+        self.save()
+
+
+class Post(models.Model):
+    """Publications sur le réseau social NIRD"""
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
+    content = models.TextField(max_length=1000)
+    image_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Lien optionnel vers un quiz
+    related_quiz = models.ForeignKey(
+        Quiz, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="posts"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.author.username} - {self.content[:50]}"
+    
+    def like_count(self):
+        return self.likes.count()
+    
+    def comment_count(self):
+        return self.comments.count()
+
+
+class Comment(models.Model):
+    """Commentaires sur les posts"""
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    content = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Pour les réponses aux commentaires
+    parent_comment = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies"
+    )
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"{self.author.username} sur {self.post.id}: {self.content[:30]}"
+
+
+class Like(models.Model):
+    """Likes sur les posts"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'post')
+    
+    def __str__(self):
+        return f"{self.user.username} ❤️ Post {self.post.id}"

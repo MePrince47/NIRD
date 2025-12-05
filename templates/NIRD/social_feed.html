@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communauté NIRD - Réseau Social</title>
+    <link rel="stylesheet" href="{% static 'css/nird-style.css' %}">
+    <style>
+        .social-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .create-post-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .create-post-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            resize: vertical;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #1e293b;
+            background: white;
+        }
+        
+        .create-post-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .post-avatar {
+            font-size: 2.5rem;
+            margin-right: 1rem;
+        }
+        
+        .post-author-info {
+            flex: 1;
+        }
+        
+        .post-author-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+        
+        .post-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .post-stats {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--bg-secondary);
+            border-bottom: 1px solid var(--bg-secondary);
+        }
+        
+        .post-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            color: #64748b;
+        }
+        
+        .post-stat-item:hover {
+            color: var(--primary-color);
+        }
+        
+        .like-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .like-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .like-btn.liked {
+            color: #e74c3c;
+        }
+        
+        .comments-section {
+            margin-top: 1rem;
+        }
+        
+        .comment {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        
+        .comment-form {
+            margin-top: 1rem;
+        }
+        
+        .comment-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: inherit;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        
+        .btn-post {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .user-level-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎯 NIRD</div>
+            <nav style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'home' %}" class="btn btn-outline">🏠 Quiz</a>
+                <a href="{% url 'leaderboard' %}" class="btn btn-outline">🏆 Classement</a>
+                <a href="{% url 'social_feed' %}" class="btn btn-primary">💬 Communauté</a>
+            </nav>
+            <div class="user-info">
+                <span class="user-name">{{ user_profile.avatar_emoji }} {{ user.username }}</span>
+                <span class="user-level-badge">Niveau {{ user_profile.level }}</span>
+                <a href="{% url 'logout' %}" class="btn btn-outline">Se déconnecter</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="social-container">
+        <h1 style="text-align: center; margin-bottom: 2rem;">💬 Communauté NIRD</h1>
+        
+        <!-- Créer un post -->
+        <div class="create-post-card">
+            <h2>✍️ Partager avec la communauté</h2>
+            <form method="post" action="{% url 'create_post' %}" class="create-post-form">
+                {% csrf_token %}
+                <textarea name="content" placeholder="Partagez vos réflexions sur le numérique responsable, vos astuces NIRD, ou vos résultats de quiz..." required></textarea>
+                <div class="post-actions">
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">
+                        💡 Partagez vos idées pour réduire les dépendances numériques !
+                    </div>
+                    <button type="submit" class="btn-post">📤 Publier</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Feed des posts -->
+        {% for post in posts %}
+        <div class="post-card">
+            <div class="post-header">
+                <div class="post-avatar">{{ post.author.profile.avatar_emoji }}</div>
+                <div class="post-author-info">
+                    <div class="post-author-name">
+                        <a href="{% url 'user_profile' post.author.username %}" style="text-decoration: none; color: inherit;">
+                            {{ post.author.username }}
+                        </a>
+                        <span class="user-level-badge">Niv. {{ post.author.profile.level }}</span>
+                    </div>
+                    <div class="post-date">{{ post.created_at|timesince }} ago</div>
+                </div>
+                {% if post.author == user %}
+                <form method="post" action="{% url 'delete_post' post.id %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="return confirm('Supprimer ce post ?')">🗑️</button>
+                </form>
+                {% endif %}
+            </div>
+            
+            <div class="post-content">{{ post.content }}</div>
+            
+            {% if post.related_quiz %}
+            <div style="background: var(--primary-light); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                🎯 Quiz lié : <strong>{{ post.related_quiz.title }}</strong>
+            </div>
+            {% endif %}
+            
+            <div class="post-stats">
+                <form method="post" action="{% url 'like_post' post.id %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="like-btn {% if user in post.likes.all %}liked{% endif %}">
+                        ❤️ {{ post.like_count }}
+                    </button>
+                </form>
+                <div class="post-stat-item">
+                    💬 {{ post.comment_count }} commentaires
+                </div>
+            </div>
+            
+            <!-- Commentaires -->
+            <div class="comments-section">
+                {% for comment in post.comments.all %}
+                    {% if not comment.parent_comment %}
+                    <div class="comment">
+                        <div class="comment-author">
+                            {{ comment.author.profile.avatar_emoji }} {{ comment.author.username }}
+                            <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: normal;">
+                                • {{ comment.created_at|timesince }} ago
+                            </span>
+                        </div>
+                        <div>{{ comment.content }}</div>
+                        
+                        <!-- Réponses -->
+                        {% for reply in comment.replies.all %}
+                        <div class="comment" style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <div class="comment-author">
+                                {{ reply.author.profile.avatar_emoji }} {{ reply.author.username }}
+                                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: normal;">
+                                    • {{ reply.created_at|timesince }} ago
+                                </span>
+                            </div>
+                            <div>{{ reply.content }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Formulaire de commentaire -->
+                <form method="post" action="{% url 'comment_post' post.id %}" class="comment-form">
+                    {% csrf_token %}
+                    <input type="text" name="content" class="comment-input" placeholder="Ajouter un commentaire..." required>
+                    <button type="submit" class="btn-post" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;">💬 Commenter</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="post-card" style="text-align: center; padding: 3rem;">
+            <h3>Aucun post pour le moment</h3>
+            <p style="color: var(--text-muted);">Soyez le premier à partager vos idées !</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🛡️ NIRD - Numérique Inclusif, Responsable et Durable</p>
+    </footer>
+</body>
+</html>
