@@ -84,7 +84,7 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.12);
 }
 </style>
-<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0;"></canvas>
+<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1;"></canvas>
 
 <div class="container mt-5">
 
@@ -292,6 +292,9 @@ canvas.height = window.innerHeight;
 const confettiCount = 100;
 const confetti = [];
 
+// Facteur global pour ralentir les confettis (0 = arrêt, 1 = vitesse d'origine)
+const speedFactor = 0.35;
+
 function random(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -305,7 +308,7 @@ for(let i = 0; i < confettiCount; i++){
         d: random(1, 5),
         color: `hsl(${random(0, 360)}, 100%, 50%)`,
         tilt: random(-10, 10),
-        tiltAngleIncrement: random(0.05, 0.12),
+        tiltAngleIncrement: random(0.02, 0.06) * speedFactor, // réduit l'incrément d'inclinaison
         tiltAngle: 0
     });
 }
@@ -316,8 +319,9 @@ function drawConfetti() {
 
     confetti.forEach((c, i) => {
         c.tiltAngle += c.tiltAngleIncrement;
-        c.y += (Math.cos(c.d) + 3 + c.r/2)/2;
-        c.x += Math.sin(c.d);
+        // Mouvement vertical et horizontal réduits par speedFactor
+        c.y += ((Math.cos(c.d) + 3 + c.r/2)/2) * speedFactor;
+        c.x += Math.sin(c.d) * speedFactor;
         c.tilt = Math.sin(c.tiltAngle) * 15;
 
         ctx.beginPath();
@@ -331,12 +335,12 @@ function drawConfetti() {
         if(c.y > canvas.height){
             confetti[i] = {
                 x: random(0, canvas.width),
-                y: -10,
+                y: -20, // repartir un peu plus haut pour un effet plus doux
                 r: c.r,
                 d: c.d,
                 color: c.color,
                 tilt: random(-10, 10),
-                tiltAngleIncrement: c.tiltAngleIncrement,
+                tiltAngleIncrement: (random(0.02, 0.06) * speedFactor),
                 tiltAngle: c.tiltAngle
             };
         }

@@ -104,6 +104,8 @@
         100% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
     }
 </style>
+<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1;"></canvas>
+
 
 <div class="container mt-4">
 
@@ -234,4 +236,79 @@
         </div>
     </div>
 </div>
+<script>
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const confettiCount = 100;
+const confetti = [];
+
+// Facteur global pour ralentir les confettis (0 = arrêt, 1 = vitesse d'origine)
+const speedFactor = 0.35;
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Crée les confettis
+for(let i = 0; i < confettiCount; i++){
+    confetti.push({
+        x: random(0, canvas.width),
+        y: random(0, canvas.height),
+        r: random(2, 6),
+        d: random(1, 5),
+        color: `hsl(${random(0, 360)}, 100%, 50%)`,
+        tilt: random(-10, 10),
+        tiltAngleIncrement: random(0.02, 0.06) * speedFactor, // réduit l'incrément d'inclinaison
+        tiltAngle: 0
+    });
+}
+
+// Dessine les confettis
+function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach((c, i) => {
+        c.tiltAngle += c.tiltAngleIncrement;
+        // Mouvement vertical et horizontal réduits par speedFactor
+        c.y += ((Math.cos(c.d) + 3 + c.r/2)/2) * speedFactor;
+        c.x += Math.sin(c.d) * speedFactor;
+        c.tilt = Math.sin(c.tiltAngle) * 15;
+
+        ctx.beginPath();
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt + c.r/2, c.y);
+        ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r/2);
+        ctx.stroke();
+
+        // Reset confetti s'il sort de l'écran
+        if(c.y > canvas.height){
+            confetti[i] = {
+                x: random(0, canvas.width),
+                y: -20, // repartir un peu plus haut pour un effet plus doux
+                r: c.r,
+                d: c.d,
+                color: c.color,
+                tilt: random(-10, 10),
+                tiltAngleIncrement: (random(0.02, 0.06) * speedFactor),
+                tiltAngle: c.tiltAngle
+            };
+        }
+    });
+
+    requestAnimationFrame(drawConfetti);
+}
+
+drawConfetti();
+
+// Ajuste le canvas lors du redimensionnement
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 {% endblock %}
