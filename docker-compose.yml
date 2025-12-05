@@ -1,28 +1,19 @@
+
 services:
-  web:
+  nird_web:
     build: .
     container_name: nird_web
     env_file: .env
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
-      - static_volume:/app/staticfiles
+      - ./staticfiles:/app/staticfiles
       - db_data:/data
-    expose:
-      - "8001"
-    command: ["/app/start.sh"]
-
-  nginx:
-    image: nginx:stable
-    container_name: nird_nginx
     ports:
-      - "${HOST_PORT:-8080}:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - static_volume:/app/staticfiles:ro
-    depends_on:
-      - web
+      - "8001:8000"  # expose Gunicorn on host port 8001
+    restart: unless-stopped
+    command: ["/app/start.sh"]
 
 volumes:
   db_data:
-  static_volume:
+ 
