@@ -7,14 +7,20 @@
 
 <div class="container container-quiz">
     
-    <!-- Header avec logo -->
-    <div class="text-center mb-5">
-        <div class="d-flex justify-content-center align-items-center mb-3">
-            <i class="bi bi-patch-question-fill me-3" style="font-size: 3rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-            <h1 class="brand-header display-4">Bienvenue aux Quiz <strong>NIRD</strong></h1>
-        </div>
-        <p class="lead text-muted mb-0">La plateforme ultime pour tester et améliorer vos connaissances</p>
+   <!-- Header avec logo -->
+<div class="text-center mb-5">
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <i class="bi bi-patch-question-fill me-3" style="font-size: 3rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        <h1 class="brand-header display-4">Bienvenue aux Quiz <strong>NIRD</strong></h1>
     </div>
+    <p class="lead text-muted mb-2">La plateforme ultime pour tester et améliorer vos connaissances</p>
+    
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" 
+         alt="Logo NIRD" 
+         class="img-fluid"
+         style="max-width: 200px; height: auto;">
+</div>
 
     <!-- Section Utilisateur -->
     <div class="user-status-card text-center">
@@ -74,12 +80,15 @@
     <!-- Section Caractéristiques -->
     <div class="row mb-5">
         <div class="col-md-4">
-            <div class="feature-card">
-                <i class="bi bi-graph-up-arrow feature-icon text-primary"></i>
-                <h5>Progression</h5>
-                <p class="text-muted">Suivez votre évolution et améliorez-vous</p>
-            </div>
+    <a href="{% url 'progression' %}" class="text-decoration-none">
+        <div class="feature-card">
+            <i class="bi bi-graph-up-arrow feature-icon text-primary"></i>
+            <h5>Progression</h5>
+            <p class="text-muted">Suivez votre évolution et améliorez-vous</p>
         </div>
+    </a>
+</div>
+
         <div class="col-md-4">
     <a href="{% url 'start_quiz' 1 %}" class="text-decoration-none">
         <div class="feature-card p-4 shadow-sm rounded h-100 text-center">
@@ -269,129 +278,7 @@
 }
 </style>
 
-{% load static %}
-<style>
-/* ... (Assurez-vous que les styles .player-card, .profile-avatar, .level-badge-large, .qr-code-area sont bien définis dans votre <style> globale) ... */
-.player-card {
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: 1.5rem;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 30px;
-    margin-bottom: 2rem;
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
 
-.profile-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--bs-warning);
-    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3);
-}
-
-.level-badge-large {
-    font-size: 1.5rem;
-    font-weight: bold;
-    padding: 0.5rem 1.5rem;
-    border-radius: 50px;
-    background: linear-gradient(45deg, #0d6efd, #007bff);
-    color: white;
-    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4);
-}
-
-.qr-code-area {
-    background-color: white;
-    padding: 10px;
-    border-radius: 1rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.info-item {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
-
-</style>
-
-<div class="row mb-5 justify-content-center">
-    <div class="col-lg-8 col-md-10">
-        <div class="player-card">
-            <h3 class="text-dark mb-4 text-center">
-                <i class="bi bi-person-badge-fill me-2 text-primary"></i>
-                Mon Profil NIRD
-            </h3>
-
-            <div class="row align-items-center">
-                
-                <div class="col-md-7 border-end border-light py-3">
-                    
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="{% static 'images/default_avatar.png' %}" 
-                             alt="Avatar de {{ user.username|default:'Invité' }}" 
-                             class="profile-avatar me-4">
-
-                        <div>
-                            <h4 class="fw-bold mb-1 text-dark">
-                                {{ user.username|default:'Joueur Invité' }}
-                            </h4>
-                            <p class="text-muted mb-0 info-item">
-                                {% if user.is_authenticated %}
-                                    <i class="bi bi-calendar-check me-2 text-success"></i>
-                                    Membre depuis **{{ user.date_joined|date:"d M Y" }}**
-                                {% else %}
-                                    <i class="bi bi-box-arrow-in-right me-2 text-secondary"></i>
-                                    Connectez-vous pour un profil complet
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center mt-4">
-                        <span class="level-badge-large">
-                            Niveau <span class="h4 mb-0">{{ player_level|default:1 }}</span>
-                        </span>
-                        
-                        <p class="mt-3 mb-0 text-muted info-item">
-                            <i class="bi bi-gem me-2 text-warning"></i> 
-                            Total de points : **{{ total_score|default:0 }} pts**
-                        </p>
-                        
-                        <p class="mb-0 text-muted info-item small">
-                            <i class="bi bi-check-circle me-2 text-info"></i>
-                            Quiz complétés : **{{ quiz_completed_count|default:0 }}**
-                        </p>
-                    </div>
-                </div>
-
-                <div class="col-md-5 text-center py-3">
-                    <h6 class="text-primary mb-3 mt-3 mt-md-0 fw-bold">
-                        <i class="bi bi-share-fill me-1"></i> Partage rapide
-                    </h6>
-                    
-                    <div class="qr-code-area mx-auto" style="max-width: 150px;">
-                        <img src="{% static 'qrcodes/'|add:user.username|add:'_qr.png' %}" 
-                             alt="QR Code de {{ user.username }}" 
-                             class="img-fluid">
-                    </div>
-                    
-                    <p class="small text-muted mt-2 mb-0">
-                        Scannez pour voir mon profil !
-                    </p>
-                    
-                    <div class="mt-3">
-                        <i class="bi bi-link-45deg me-2 text-secondary"></i>
-                        <small class="text-muted">Lien de profil : Disponible</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
