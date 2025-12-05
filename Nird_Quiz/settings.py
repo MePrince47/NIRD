@@ -21,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@%bqd$3+d@&28s)!tv)m#x@&icmh2j==d^^yjx8^td@acxk7%@'
+# Read secret key and debug flags from environment for production deploys
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-@%bqd$3+d@&28s)!tv)m#x@&icmh2j==d^^yjx8^td@acxk7%@')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
 
-ALLOWED_HOSTS = []
+# Allow hosts from environment (comma-separated), default to localhost for dev
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost').split(',')
 
 
 # Application definition
@@ -78,7 +80,8 @@ WSGI_APPLICATION = 'Nird_Quiz.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Allow overriding sqlite path so we can mount a volume (e.g. /data/db.sqlite3)
+        'NAME': os.environ.get('SQLITE_PATH', str(BASE_DIR / 'db.sqlite3')),
     }
 }
 
