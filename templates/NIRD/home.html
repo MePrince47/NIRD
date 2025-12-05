@@ -1,4 +1,5 @@
 {% load static %}
+{% load nird_filters %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -107,16 +108,33 @@
                     </div>
                     
                     {% if user.is_authenticated %}
-                        <!-- Progress bar (can be dynamic later) -->
+                        <!-- Progress bar dynamique -->
+                        {% with progress=quiz_progress|get_item:quiz.id %}
                         <div class="level-progress">
                             <div class="progress-label">
-                                <span>Progression</span>
-                                <span>0%</span>
+                                <span>
+                                    {% if progress.completed %}
+                                        {% if progress.passed %}
+                                            ✅ Réussi
+                                        {% else %}
+                                            ⚠️ À améliorer
+                                        {% endif %}
+                                    {% else %}
+                                        Progression
+                                    {% endif %}
+                                </span>
+                                <span>{{ progress.percentage }}%</span>
                             </div>
                             <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: 0%"></div>
+                                <div class="progress-bar" style="width: {{ progress.percentage }}%; {% if progress.passed %}background: linear-gradient(90deg, #10b981, #059669);{% elif progress.completed %}background: linear-gradient(90deg, #f59e0b, #d97706);{% endif %}"></div>
                             </div>
+                            {% if progress.completed %}
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                    Meilleur score : {{ progress.best_score }}/{{ progress.max_score }} points
+                                </div>
+                            {% endif %}
                         </div>
+                        {% endwith %}
                         
                         <div class="level-actions">
                             {% if quiz.level > user_profile.level %}
@@ -124,9 +142,15 @@
                                     <span class="lock-icon">🔒</span> Niveau {{ quiz.level }} requis
                                 </button>
                             {% else %}
+                                {% with progress=quiz_progress|get_item:quiz.id %}
                                 <a href="{% url 'start_quiz' quiz.id %}" class="btn-start">
-                                    🚀 Commencer le niveau
+                                    {% if progress.completed %}
+                                        🔄 Refaire le niveau
+                                    {% else %}
+                                        🚀 Commencer le niveau
+                                    {% endif %}
                                 </a>
+                                {% endwith %}
                             {% endif %}
                         </div>
                     {% else %}

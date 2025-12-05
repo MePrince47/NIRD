@@ -93,9 +93,56 @@ class UserProfile(models.Model):
         """Met à jour les statistiques de l'utilisateur"""
         attempts = UserQuizAttempt.objects.filter(user=self.user, completed=True)
         self.total_points = sum(attempt.score for attempt in attempts)
-        # Calcul du niveau basé sur les points
-        self.level = min(10, (self.total_points // 100) + 1)
+        
+        # Calcul du niveau basé sur les quiz complétés avec succès
+        # Un quiz est considéré réussi si le score >= 60% du maximum
+        from NIRD.models import Quiz
+        completed_quiz_levels = set()
+        
+        for attempt in attempts:
+            quiz = attempt.quiz
+            max_score = sum(q.points for q in quiz.questions.all())
+            if max_score > 0:
+                percentage = (attempt.score / max_score) * 100
+                if percentage >= 60:  # 60% minimum pour valider un niveau
+                    completed_quiz_levels.add(quiz.level)
+        
+        # Le niveau de l'utilisateur = le niveau le plus élevé complété + 1
+        if completed_quiz_levels:
+            self.level = max(completed_quiz_levels) + 1
+        else:
+            self.level = 1  # Niveau de départ
+        
         self.save()
+    
+    def get_quiz_progress(self, quiz):
+        """Retourne la progression de l'utilisateur pour un quiz donné"""
+        attempts = UserQuizAttempt.objects.filter(
+            user=self.user, 
+            quiz=quiz, 
+            completed=True
+        ).order_by('-score')
+        
+        if not attempts.exists():
+            return {
+                'completed': False,
+                'best_score': 0,
+                'max_score': sum(q.points for q in quiz.questions.all()),
+                'percentage': 0,
+                'passed': False
+            }
+        
+        best_attempt = attempts.first()
+        max_score = sum(q.points for q in quiz.questions.all())
+        percentage = (best_attempt.score / max_score * 100) if max_score > 0 else 0
+        
+        return {
+            'completed': True,
+            'best_score': best_attempt.score,
+            'max_score': max_score,
+            'percentage': round(percentage, 1),
+            'passed': percentage >= 60
+        }
 
 
 class Post(models.Model):

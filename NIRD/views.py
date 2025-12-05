@@ -17,14 +17,21 @@ from .models import (
 def home(request):
     quizzes = Quiz.objects.all().order_by('level')
     
-    # Si l'utilisateur est connecté, récupérer son profil
+    # Si l'utilisateur est connecté, récupérer son profil et la progression
     user_profile = None
+    quiz_progress = {}
+    
     if request.user.is_authenticated:
         user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        
+        # Calculer la progression pour chaque quiz
+        for quiz in quizzes:
+            quiz_progress[quiz.id] = user_profile.get_quiz_progress(quiz)
     
     return render(request, "NIRD/home.html", {
         "quizzes": quizzes,
-        "user_profile": user_profile
+        "user_profile": user_profile,
+        "quiz_progress": quiz_progress
     })
 
 
@@ -74,6 +81,10 @@ def start_quiz(request, quiz_id):
 def question_view(request, attempt_id, question_id):
     attempt = get_object_or_404(UserQuizAttempt, id=attempt_id, user=request.user)
     question = get_object_or_404(Question, id=question_id, quiz=attempt.quiz)
+    
+    # Vérifier si le quiz est déjà complété
+    if attempt.completed:
+        return redirect('quiz_result', attempt_id=attempt.id)
     
     # Récupérer le tip pour cette question
     answered_count = attempt.answers.count()

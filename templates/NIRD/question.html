@@ -209,6 +209,7 @@
     {% endif %}
 
     <script>
+        // eslint-disable-next-line
         let timeLeft = {{ time_limit }};
         let timerElem = document.getElementById("timer");
         let form = document.getElementById("quizForm");
@@ -235,15 +236,13 @@
         }, 1000);
         
         // Fermer la bulle d'info après 8 secondes
-        {% if quiz_tip %}
-        setTimeout(() => {
-            const bubble = document.getElementById('tipBubble');
-            if(bubble) {
+        const bubble = document.getElementById('tipBubble');
+        if(bubble) {
+            setTimeout(() => {
                 bubble.style.animation = 'slideIn 0.5s ease-out reverse';
                 setTimeout(() => bubble.remove(), 500);
-            }
-        }, 8000);
-        {% endif %}
+            }, 8000);
+        }
     </script>
 </body>
 </html>
