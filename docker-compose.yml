@@ -1,0 +1,19 @@
+
+services:
+  nird_web:
+    build: .
+    container_name: nird_web
+    env_file: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - db_data:/data
+    ports:
+      - "8001:8030"
+    restart: unless-stopped
+    command: ["/app/start.sh"]
+
+volumes:
+  db_data:
+ 
