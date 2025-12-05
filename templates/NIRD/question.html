@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}Question - Quiz NIRD{% endblock %}
 
 {% block content %}
@@ -87,62 +87,100 @@ body {
 
 <div class="container mt-5">
 
-   <div class="banner position-relative">
+<!-- Bannière -->
+<div class="banner position-relative">
     <div class="d-flex align-items-center justify-content-center">
         <i class="bi bi-rocket-takeoff-fill h2 me-2"></i>
         <h1 class="fw-bold mb-0">Quiz NIRD - Le Défi</h1>
     </div>
     <p class="fs-5 mb-0">Concentrez-vous ! Chaque seconde compte.</p>
     
-    <a href="{% url 'home' %}" class="btn btn-outline-light position-absolute top-0 end-0 m-3 shadow-sm d-flex align-items-center" title="Retour à l'accueil">
+    <a href="{% url 'home' %}" 
+       class="btn btn-outline-light position-absolute top-0 end-0 m-3 shadow-sm d-flex align-items-center" 
+       title="Retour à l'accueil">
         <i class="bi bi-house-door-fill me-2"></i> Accueil
     </a>
 </div>
+<style>
+    .avatar-float {
+    animation: float 3s ease-in-out infinite;
+}
 
-    <div class="question-box">
-        <!-- Timer -->
-        <div class="d-flex justify-content-center mb-4">
-            <span class="badge timer-badge" id="timer-badge">
-                <i class="bi bi-clock-fill me-2"></i> <span id="timer">{{ time_limit }}</span> s
-            </span>
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+</style>
+<div class="question-box">
+
+    <div class="row align-items-center">
+
+        <!-- IMAGE À GAUCHE -->
+        <div class="col-md-4 text-center mb-4">
+            <img src="{% static 'images/avatar.png' %}" 
+     alt="Avatar"
+     class="img-fluid avatar-float"
+     style="max-height: 350px; object-fit: contain;">
+
         </div>
 
-        <!-- Question -->
-        <h2 class="mb-5 text-dark fw-bold text-center">
-            <span class="text-primary me-2">Q:</span> {{ question.text }}
-        </h2>
+        <!-- ZONE DE DROITE : Timer + Question + Réponses -->
+        <div class="col-md-8">
 
-        {% if error %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> Erreur : {{ error }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Timer -->
+            <div class="d-flex justify-content-center mb-4">
+                <span class="badge timer-badge" id="timer-badge">
+                    <i class="bi bi-clock-fill me-2"></i> <span id="timer">{{ time_limit }}</span> s
+                </span>
+            </div>
+
+            <!-- Question -->
+            <h2 class="mb-5 text-dark fw-bold text-center">
+                <span class="text-primary me-2">Q:</span> {{ question.text }}
+            </h2>
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Erreur : {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <!-- Formulaire réponses -->
+            <form method="post" id="quiz-form" class="row">
+                {% csrf_token %}
+                <div class="col-12">
+                    {% for answer in question.answers %}
+                    <input type="radio" class="btn-check" name="answer"
+                           id="answer{{ forloop.counter }}" value="{{ forloop.counter0 }}" autocomplete="off">
+
+                    <label class="option-card p-3 d-block shadow-sm" for="answer{{ forloop.counter }}">
+                        <div class="d-flex align-items-center">
+
+                            <span class="badge bg-primary-subtle text-primary me-3 fs-5">
+                                {{ forloop.counter }}
+                            </span>
+
+                            <span class="answer-text">{{ answer }}</span>
+
+                        </div>
+                    </label>
+
+                    {% endfor %}
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-lg">
+                        <i class="bi bi-check-circle-fill me-2"></i> Valider ma réponse
+                    </button>
+                </div>
+            </form>
+
         </div>
-        {% endif %}
-
-        <!-- Formulaire réponses -->
-        <form method="post" id="quiz-form" class="row">
-            {% csrf_token %}
-            <div class="col-12">
-                {% for answer in question.answers %}
-                <input type="radio" class="btn-check" name="answer" id="answer{{ forloop.counter }}" value="{{ forloop.counter0 }}" autocomplete="off">
-                <label class="option-card p-3 d-block shadow-sm" for="answer{{ forloop.counter }}">
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-primary-subtle text-primary me-3 fs-5">
-                            {{ forloop.counter|add:"0"|slice:"1" }}
-                        </span>
-                        <span class="answer-text">{{ answer }}</span>
-                    </div>
-                </label>
-                {% endfor %}
-            </div>
-            
-            <div class="col-12 mt-4">
-                <button type="submit" class="btn btn-primary btn-lg w-100 shadow-lg">
-                    <i class="bi bi-check-circle-fill me-2"></i> Valider ma réponse
-                </button>
-            </div>
-        </form>
     </div>
+</div>
 </div>
 
 <script>
@@ -174,4 +212,5 @@ body {
         }
     }, 1000);
 </script>
+
 {% endblock %}

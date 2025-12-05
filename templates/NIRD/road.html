@@ -169,6 +169,10 @@
                 hideLoader();
             }, 3000);
             */
+            // Optionnel : supprimer du DOM après la transition
+            setTimeout(() => {
+            window.location.href = "{% url 'home' %}";
+        }, 3000);
         });
 
         // Fonction pour cacher le loader
@@ -176,10 +180,7 @@
             const loader = document.getElementById('ennirdy-loader');
             loader.classList.add('loader-hidden');
             
-            // Optionnel : supprimer du DOM après la transition
-            setTimeout(() => {
-            window.location.href = "{% url 'home' %}";
-        }, 500);
+           
         }
     </script>
 </body>
