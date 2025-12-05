@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chat Communautaire - NIRD{% endblock %}
+
+{% block content %}
+<style>
+/* ... Styles existants (body, banner, input-group, keyframes) ... */
+body {
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+}
+
+.banner {
+    padding: 3rem 2rem;
+    border-radius: 2rem;
+    background: rgba(13, 110, 253, 0.85);
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.banner:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+}
+
+/* NOUVEAU: Conteneur principal pour la grille */
+.main-chat-grid {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    /* Retrait du max-width pour que le container du chat s'étende */
+}
+
+/* Styles pour les deux colonnes (Glassmorphism) */
+.glass-panel {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    height: 100%; /* S'assure que les deux côtés sont de hauteur égale (si le contenu le permet) */
+}
+
+/* --- Colonne Gauche: Contenu Spécial --- */
+.sidebar-content {
+    /* Ajoute un style spécifique à la zone de contenu (gauche) */
+}
+
+.sidebar-item {
+    padding: 15px;
+    border-radius: 0.75rem;
+    margin-bottom: 15px;
+    background-color: rgba(248, 249, 250, 0.7);
+    border-left: 5px solid var(--bs-primary);
+}
+
+/* --- Colonne Droite: Chat --- */
+.chat-box {
+    height: 450px;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: rgba(248, 249, 250, 0.85);
+    border-radius: 1rem;
+    margin-bottom: 20px;
+    scroll-behavior: smooth;
+}
+
+.message-item {
+    display: flex;
+    margin-bottom: 15px;
+    align-items: flex-end;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 10px 15px;
+    border-radius: 1rem;
+    position: relative;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    word-wrap: break-word;
+}
+
+.message-user-self { justify-content: flex-end; }
+.message-user-self .message-bubble {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message-user-other { justify-content: flex-start; }
+.message-user-other .message-bubble {
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 5px;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    margin-left: 10px;
+    color: #6c757d;
+    display: block;
+}
+.message-user-self .message-timestamp {
+    color: #ced4da;
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+.input-group .form-control {
+    border-radius: 0.75rem 0 0 0.75rem;
+    border: 1px solid #ced4da;
+    box-shadow: none !important;
+}
+.input-group .btn {
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="container mt-5">
+    
+    <div class="banner position-relative">
+        <div class="d-flex align-items-center justify-content-center">
+            <i class="bi bi-chat-dots-fill display-5 me-3"></i>
+            <h1 class="fw-bold mb-0">Chat Communautaire NIRD</h1>
+        </div>
+        <p class="fs-5 mb-0 mt-2">Échangez vos Fragments de Savoir avec les autres joueurs.</p>
+        
+        <a href="{% url 'home' %}" class="btn btn-outline-light position-absolute top-0 end-0 m-4 shadow-sm d-flex align-items-center" title="Retour à l'accueil">
+            <i class="bi bi-house-door-fill me-2"></i> Accueil
+        </a>
+    </div>
+    
+    <div class="row g-4 main-chat-grid">
+
+        <div class="col-lg-5">
+            <div class="glass-panel sidebar-content">
+                <h3 class="text-primary fw-bold mb-4">
+                    <i class="bi bi-info-circle-fill me-2"></i> Guide NIRD
+                </h3>
+
+                <div class="sidebar-item">
+                    <h6 class="fw-bold text-dark">Règles du Chat</h6>
+                    <p class="small mb-0 text-muted">
+                        Restez courtois. Pas de spam ni de triche. Les modérateurs veillent !
+                    </p>
+                </div>
+                
+                <div class="sidebar-item">
+                    <h6 class="fw-bold text-dark">Statut du Quiz</h6>
+                    <p class="small mb-0 text-muted">
+                        <i class="bi bi-person-fill me-2"></i> Joueurs Actifs: 50
+                    </p>
+                    <p class="small mb-0 text-muted">
+                        <i class="bi bi-stars me-2"></i> Niveau Moyen: 12
+                    </p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'leaderboard' %}" class="btn btn-outline-secondary w-75">
+                         <i class="bi bi-trophy-fill me-2"></i> Voir le classement
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="glass-panel p-0">
+                <div class="chat-box" id="chat-messages">
+                    {% for msg in messages %}
+                        <div class="message-item {% if msg.user == user %}message-user-self{% else %}message-user-other{% endif %}">
+                            {% if msg.user == user %}
+                                <small class="message-timestamp">{{ msg.timestamp|date:"H:i" }}</small>
+                                <div class="message-bubble">{{ msg.message }}</div>
+                            {% else %}
+                                <div class="message-bubble">
+                                    <strong class="fw-bold d-block mb-1 me-2" style="color: #0d6efd;">
+                                        {{ msg.user.username }}
+                                    </strong>
+                                    {{ msg.message }}
+                                </div>
+                                <small class="message-timestamp">{{ msg.timestamp|date:"H:i" }}</small>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center p-5">
+                            <i class="bi bi-info-circle me-2"></i> Soyez le premier à lancer la discussion !
+                        </p>
+                    {% endfor %}
+                </div>
+
+               <style>
+/* ... Styles CSS précédents ... */
+
+/* --- Styles pour le Formulaire d'Envoi (Plus Gros et Arrondi) --- */
+
+.input-group {
+    /* Ajoute une petite ombre autour de l'ensemble du groupe pour le style Glassmorphism */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.input-group .form-control {
+    /* Augmente la taille du padding pour le rendre plus grand */
+    padding: 1rem 1.25rem; 
+    
+    /* Rend les coins encore plus arrondis pour un look plus doux */
+    border-radius: 1.5rem 0 0 1.5rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease;
+    font-size: 1.05rem; /* Augmente légèrement la taille de la police */
+}
+
+.input-group .form-control:focus {
+    /* Met en évidence le focus */
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.input-group .btn {
+    /* Augmente la taille du bouton pour correspondre au champ */
+    padding: 0.85rem 1.5rem; 
+    
+    /* Rend les coins encore plus arrondis */
+    border-radius: 0 1.5rem 1.5rem 0;
+    font-size: 1.05rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+/* Texte d'erreur */
+.form-error-message {
+    font-size: 0.9rem;
+    padding-left: 10px;
+}
+
+/* ... Styles CSS suivants ... */
+</style>
+
+<div class="p-3 pt-0">
+    {% if user.is_authenticated %}
+    <form method="post" id="chat-form">
+        {% csrf_token %}
+        <div class="input-group">
+            {{ form.message }} 
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-send-fill me-1"></i> Envoyer
+            </button>
+        </div>
+        {% if form.message.errors %}
+            <small class="text-danger d-block mt-2 form-error-message">{{ form.message.errors.0 }}</small>
+        {% endif %}
+    </form>
+    {% else %}
+    <div class="alert alert-warning text-center small mb-0">
+        <i class="bi bi-lock-fill me-2"></i> Connectez-vous pour participer au chat. 
+        <a href="{% url 'login' %}" class="alert-link fw-bold">Se connecter</a>
+    </div>
+    {% endif %}
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fait défiler automatiquement vers le bas à chaque chargement de page
+    window.onload = function() {
+        const chatBox = document.getElementById('chat-messages');
+        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Désactive le bouton Envoyer après le clic pour éviter les doubles soumissions
+    document.getElementById('chat-form')?.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.setAttribute('disabled', 'disabled');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Envoi...';
+    });
+</script>
+{% endblock content %}

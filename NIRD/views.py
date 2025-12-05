@@ -291,3 +291,54 @@ def leaderboard(request):
         })
 
     return render(request, "NIRD/leaderboard.html", {"top_scores": results})
+
+from django.shortcuts import render, redirect
+from .models import ChatMessage
+from .forms import ChatMessageForm
+
+def chat_view(request):
+    messages = ChatMessage.objects.order_by('timestamp')  # affichage du plus ancien au plus récent
+
+    if request.method == "POST":
+        form = ChatMessageForm(request.POST)
+        if form.is_valid():
+            chat_msg = form.save(commit=False)
+            chat_msg.user = request.user
+            chat_msg.save()
+            return redirect('chat')  # redirige pour recharger les messages
+    else:
+        form = ChatMessageForm()
+
+    return render(request, "NIRD/chat.html", {"messages": messages, "form": form})
+
+from django.db.models import Sum, Count, F, FloatField
+
+def progression(request):
+    top_scores = (
+        UserQuizAttempt.objects
+        .filter(user__isnull=False)
+        .values('user')
+        .annotate(
+            total_score=Sum('score'),
+            quiz_count=Count('quiz'),
+            average_score=Sum('score') / Count('quiz', output_field=FloatField())
+        )
+        .order_by('-total_score')
+    )
+
+    results = []
+    for entry in top_scores:
+        try:
+            user = User.objects.get(id=entry['user'])
+            username = user.username
+        except User.DoesNotExist:
+            username = "Unknown"
+
+        results.append({
+            "username": username,
+            "total_score": entry['total_score'],
+            "quiz_count": entry['quiz_count'],
+            "average_score": entry['average_score'],
+        })
+
+    return render(request, "NIRD/progression.html", {"top_scores": results})

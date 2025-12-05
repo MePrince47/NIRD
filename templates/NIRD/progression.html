@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Progression des Joueurs - NIRD{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+    }
+
+    .progression-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        background-color: rgba(255,255,255,0.95);
+        border-radius: 2rem;
+        padding: 30px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .progression-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: bold;
+        color: #0d6efd;
+        font-size: 2rem;
+    }
+
+    .table thead th {
+        background-color: rgba(13,110,253,0.85);
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(13,110,253,0.1);
+        transform: translateY(-2px);
+        transition: all 0.2s ease;
+    }
+
+    .badge-quiz {
+        background-color: #0d6efd;
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 0.75rem;
+    }
+
+</style>
+
+<div class="progression-container">
+    <h2 class="progression-title">Progression des Joueurs</h2>
+
+    <div class="table-responsive">
+        <table class="table table-borderless text-center align-middle">
+            <thead>
+                <tr>
+                    <th>Rang</th>
+                    <th>Utilisateur</th>
+                    <th>Score Total</th>
+                    <th>Quiz Complétés</th>
+                    <th>Moyenne par Quiz</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in top_scores %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ entry.username }}</td>
+                        <td>{{ entry.total_score }}</td>
+                        <td><span class="badge-quiz">{{ entry.quiz_count }}</span></td>
+                        <td>{{ entry.average_score|floatformat:1 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted">Aucun joueur pour le moment.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'home' %}" class="btn btn-primary">
+            <i class="bi bi-house-door-fill me-2"></i> Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}
