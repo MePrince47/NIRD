@@ -10,7 +10,7 @@ services:
       - ./staticfiles:/app/staticfiles
       - db_data:/data
     ports:
-      - "8001:8030"
+      - "8030:8030"
     restart: unless-stopped
     command: ["/app/start.sh"]
 
