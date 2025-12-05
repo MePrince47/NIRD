@@ -3,26 +3,143 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Résultat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Résultat du Quiz - NIRD</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .banner {
+            background: rgba(13,110,253,0.85);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            border-radius: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.85);
+            border-radius: 2rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(15px);
+            margin-bottom: 2rem;
+        }
+
+        .score-box {
+            background: linear-gradient(45deg, #0d6efd, #007bff);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(13,110,253,0.3);
+        }
+
+        .list-group-item {
+            margin-bottom: 1rem;
+            border-radius: 1rem;
+            border: none;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(5px);
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .list-group-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .correct {
+            border-left: 5px solid #198754;
+        }
+
+        .incorrect {
+            border-left: 5px solid #dc3545;
+        }
+
+        .btn-custom {
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
 </head>
-<body>
-    <h1>Résultat du Quiz : {{ attempt.quiz.title }}</h1>
+<body class="container">
 
-    <p>Utilisateur : {{ attempt.user.username }}</p>
-    <p>Score total : {{ attempt.score }}</p>
+    <!-- Bannière -->
+    <div class="banner mb-4">
+        <i class="bi bi-trophy-fill me-2 fs-2"></i>
+        <span class="fs-3 fw-bold">Résultat du Quiz : {{ attempt.quiz.title }}</span>
+    </div>
 
-    <h2>Détails des réponses :</h2>
-    <ul>
-        {% for answer in attempt.answers.all %}
-            <li>
-                Question : {{ answer.question.text }} <br>
-                Votre réponse : {{ answer.question.answers|slice:answer.selected_index|first }} <br>
-                Correct : {{ answer.correct }}
-            </li>
-        {% endfor %}
-    </ul>
+    <!-- Carte principale -->
+    <div class="result-card">
 
-    <a href="{% url 'home' %}">Retour à l'accueil</a>
+        <!-- Score -->
+        <div class="score-box">
+            <p class="fs-5 mb-1">Score Final</p>
+            <p class="display-4 fw-bold">{{ attempt.score }}</p>
+            <p><i class="bi bi-person-fill me-2"></i> Utilisateur : {{ attempt.user.username }}</p>
+        </div>
+
+        <!-- Détails réponses -->
+        <h2 class="mb-3 fs-5 text-primary"><i class="bi bi-list-check me-2"></i> Détails des réponses</h2>
+        <div class="list-group">
+            {% for answer in attempt.answers.all %}
+                <div class="list-group-item {% if answer.correct %}correct{% else %}incorrect{% endif %}">
+                    <p class="fw-bold mb-1">Question : {{ answer.question.text }}</p>
+                    <p class="mb-1">Votre réponse : {{ answer.get_selected_answer }}</p>
+                    <p class="mb-0">Statut : 
+                        {% if answer.correct %}
+                            <span class="text-success fw-bold">Correcte</span>
+                        {% else %}
+                            <span class="text-danger fw-bold">Incorrecte</span>
+                        {% endif %}
+                    </p>
+                    {% if not answer.correct %}
+                        <p class="text-muted mt-1 mb-0">Bonne réponse : {{ answer.question.get_correct_answer }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4 text-center">
+            {% if is_anonymous %}
+                <p class="mb-3">
+                    Vous pouvez <a href="{% url 'login' %}?attempt_id={{ attempt.id }}" class="fw-bold">vous connecter</a> ou 
+                    <a href="{% url 'signup' %}?attempt_id={{ attempt.id }}" class="fw-bold">vous inscrire</a> pour sauvegarder votre score.
+                </p>
+            {% endif %}
+
+            {% if next_quizzes_exist %}
+                <a href="{% url 'start_quiz' next_level %}" class="btn btn-success btn-custom me-2">
+                    Passer au Niveau {{ next_level }}
+                </a>
+            {% else %}
+                <p class="text-info mb-2">Vous avez terminé tous les niveaux disponibles !</p>
+            {% endif %}
+            <a href="{% url 'home' %}" class="btn btn-primary btn-custom">Retour à l'accueil</a>
+        </div>
+
+    </div>
+
 </body>
 </html>

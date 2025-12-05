@@ -1,31 +1,221 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Quiz NIRD</title>
-     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-</head>
-<body>
-    <h1 class="title ">Bienvenue aux Quiz NIRD</h1>
+{% extends "base.html" %}
 
-    {% if user.is_authenticated %}
-        <p>Bonjour, {{ user.username }} !</p>
-        <a href="">Se déconnecter</a>
-    {% else %}
-        <a href="{% url 'login' %}">Se connecter</a>
-    {% endif %}
+{% block title %}Accueil - Quiz NIRD{% endblock %}
 
-    <h2>Choisissez un quiz :</h2>
-    <ul>
-        {% for quiz in quizzes %}
-            <li>
-                {{ quiz.title }} (Niveau {{ quiz.level }}) - 
-                <a href="{% url 'start_quiz' quiz.id %}">Commencer</a>
-            </li>
-        {% empty %}
-            <li>Aucun quiz disponible pour le moment.</li>
+{% block content %}
+
+
+<div class="container container-quiz">
+    
+    <!-- Header avec logo -->
+    <div class="text-center mb-5">
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <i class="bi bi-patch-question-fill me-3" style="font-size: 3rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            <h1 class="brand-header display-4">Bienvenue aux Quiz <strong>NIRD</strong></h1>
+        </div>
+        <p class="lead text-muted mb-0">La plateforme ultime pour tester et améliorer vos connaissances</p>
+    </div>
+
+    <!-- Section Utilisateur -->
+    <div class="user-status-card text-center">
+        {% if user.is_authenticated %}
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
+                <div class="mb-3 mb-md-0 me-md-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-gradient rounded-circle p-3 me-3">
+                            <i class="bi bi-person-check-fill text-white fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h5 class="mb-1 text-dark">Bonjour, <strong>{{ user.username }}</strong> !</h5>
+                            <p class="text-muted mb-0">Prêt à relever de nouveaux défis ?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-lg">
+                        <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                    </a>
+                    {% if user.profile %}
+                        <a href="{% url 'profile' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-person-circle me-2"></i> Profil
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
+                <div class="mb-3 mb-md-0 me-md-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-secondary bg-gradient rounded-circle p-3 me-3">
+                            <i class="bi bi-person-lock-fill text-white fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h5 class="mb-1 text-dark">Connectez-vous</h5>
+                            <p class="text-muted mb-0">Enregistrez votre progression et comparez vos scores</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg pulse-animation">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Connexion
+                    </a>
+                    <a href="{% url 'signup' %}" class="btn btn-outline-success btn-lg">
+                        <i class="bi bi-person-plus me-2"></i> Inscription
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Section Caractéristiques -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="bi bi-graph-up-arrow feature-icon text-primary"></i>
+                <h5>Progression</h5>
+                <p class="text-muted">Suivez votre évolution et améliorez-vous</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+    <a href="{% url 'start_quiz' 1 %}" class="text-decoration-none">
+        <div class="feature-card p-4 shadow-sm rounded h-100 text-center">
+            <i class="bi bi-award feature-icon text-warning" style="font-size: 2rem;"></i>
+            <h5 class="mt-3">Défis</h5> 
+            <p class="text-muted">Affrontez des quiz variés et stimulants</p>
+        </div>
+    </a>
+</div>
+
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="bi bi-people feature-icon text-success"></i>
+                <h5>Communauté</h5>
+                <p class="text-muted">Comparez vos scores avec d'autres joueurs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Quiz -->
+    <h2 class="text-center mb-4 text-dark">Choisissez votre niveau</h2>
+    <div class="row justify-content-center g-4">
+        {% for level in levels %}
+        <div class="col-md-6 col-lg-4">
+            <div class="quiz-card">
+                <div class="card-icon-wrapper text-white">
+                    <i class="bi bi-award-fill" style="font-size: 3rem;"></i>
+                    <span class="level-badge">Niveau {{ level.number }}</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark mb-3">{{ level.title }}</h5>
+                    <p class="card-text text-muted flex-grow-1">{{ level.description }}</p>
+                    <div class="mt-4">
+                        {% if level.unlocked %}
+                            <a href="{% url 'start_quiz' level.number %}" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-play-circle me-2"></i> Commencer
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                <i class="bi bi-lock me-2"></i> Verrouillé
+                            </button>
+                            <small class="text-muted mt-2 d-block">
+                                Scorez {{ level.required_score }} points pour débloquer
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </ul>
-</body>
-</html>
+    </div>
+
+    <!-- Section Classement -->
+    <div class="top-scores-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-dark mb-0">
+                <i class="bi bi-trophy-fill me-2 text-warning"></i> 
+                Classement Top 5
+            </h3>
+            <span class="badge bg-primary bg-gradient fs-6">Mise à jour quotidienne</span>
+        </div>
+        
+        <div class="score-table">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 100px;">Rang</th>
+                        <th>Joueur</th>
+                        <th class="text-center" style="width: 150px;">Score</th>
+                        <th class="text-center" style="width: 150px;">Progression</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in top_scores %}
+                    <tr>
+                        <td class="text-center">
+                            <div class="rank-badge rank-{{ forloop.counter }}">
+                                {% if forloop.counter <= 3 %}
+                                    <i class="bi bi-trophy-fill"></i>
+                                {% else %}
+                                    {{ forloop.counter }}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="bi bi-person-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 text-dark">{{ player.username }}</h6>
+                                    <small class="text-muted">{{ player.quiz_count }} quiz complétés</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary bg-gradient fs-6 py-2 px-3">
+                                {{ player.score }} pts
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="progress-ring">
+                                <svg width="60" height="60" viewBox="0 0 60 60">
+                                    <circle cx="30" cy="30" r="25" stroke="#e9ecef" stroke-width="6" fill="none"/>
+                                    <circle cx="30" cy="30" r="25" stroke="{% if forloop.counter == 1 %}#FFD700{% elif forloop.counter == 2 %}#C0C0C0{% elif forloop.counter == 3 %}#CD7F32{% else %}#007bff{% endif %}" 
+                                            stroke-width="6" fill="none" stroke-linecap="round"
+                                            stroke-dasharray="{{ player.progress|default:100 }} 158"/>
+                                </svg>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <i class="bi bi-emoji-frown display-4 text-muted mb-3 d-block"></i>
+                            <h5 class="text-muted">Aucun score enregistré</h5>
+                            <p class="text-muted mb-0">Soyez le premier à jouer !</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if user.is_authenticated %}
+        <div class="text-center mt-4">
+            <a href="{% url 'leaderboard' %}" class="btn btn-outline-primary">
+                <i class="bi bi-bar-chart-line me-2"></i> Voir le classement complet
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-5 pt-4 text-center text-muted border-top">
+        <p class="mb-2">Quiz NIRD &copy; 2024 - Plateforme éducative interactive</p>
+        <small>Tous droits réservés | <a href="#" class="text-decoration-none">Conditions d'utilisation</a> | <a href="#" class="text-decoration-none">Politique de confidentialité</a></small>
+    </footer>
+    
+</div>
+
+
+{% endblock %}

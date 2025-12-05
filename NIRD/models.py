@@ -38,15 +38,13 @@ class Question(models.Model):
     def __str__(self):
         return f"{self.text[:50]}"
 
+
 class UserQuizAttempt(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    score = models.PositiveIntegerField(default=0)
+    selected_questions = models.JSONField(default=list)
+    score = models.IntegerField(default=0)
     completed = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.quiz.title}"
-
 
 class UserAnswer(models.Model):
     attempt = models.ForeignKey(UserQuizAttempt, on_delete=models.CASCADE, related_name="answers")
