@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ma Progression - NIRD{% endblock %}
+
+{% block content %}
+<style>
+    /* Fond général Aero */
+    body {
+        background: linear-gradient(135deg, #e0eafc, #cfdef3);
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    /* --- Styles Généraux des Composants Glassmorphism (avec effet de mouvement) --- */
+    
+    .glass-panel {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 1.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        padding: 30px;
+    }
+
+    .glass-panel:hover {
+        transform: translateY(-5px); /* Léger mouvement vers le haut au survol */
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* --- Carte de Profil (Remplacement de l'Avatar par une Icône) --- */
+
+    .profile-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 80px;
+        color: #6c757d; /* Gris pour un avatar inconnu */
+        border-radius: 50%;
+        border: 4px solid #ced4da;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .profile-icon:hover {
+        transform: scale(1.05);
+    }
+
+    .level-badge-large {
+        display: inline-block;
+        background: linear-gradient(45deg, #0d6efd, #007bff);
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4);
+        animation: pulse 2s infinite; /* Animation douce */
+    }
+
+    /* Styles pour les informations claires */
+    .info-item {
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    /* --- Tableau de Classement (Amélioration) --- */
+    
+    .leaderboard-table-panel {
+        padding: 20px;
+    }
+    
+    .leaderboard-table table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .leaderboard-table th {
+        color: #0d6efd;
+        font-weight: 600;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .leaderboard-table tr {
+        background-color: rgba(248, 249, 250, 0.8);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .leaderboard-table tr:hover {
+        background-color: rgba(233, 236, 239, 0.9);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    /* Animation subtile pour le niveau */
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(13, 110, 253, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
+    }
+</style>
+<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1;"></canvas>
+
+
+<div class="container mt-4">
+
+    <div class="glass-panel text-center mb-5" style="background-color: rgba(13, 110, 253, 0.85); color: white;">
+        <i class="bi bi-bar-chart-line-fill display-5 me-2"></i>
+        <h1 class="fw-bold mb-0">Ma Progression NIRD</h1>
+        <p class="fs-5 mt-2 mb-0">Suivez vos performances et comparez-vous à la communauté.</p>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-5">
+            <div class="glass-panel">
+                <h3 class="text-dark mb-4 text-center">
+                    <i class="bi bi-person-circle me-2 text-warning"></i>
+                    Statut du Joueur
+                </h3>
+
+                <div class="text-center">
+                    
+                    {% if user.is_authenticated %}
+                        <i class="bi bi-person-fill-gear profile-icon mb-3" style="color: #0d6efd; border-color: #0d6efd;"></i>
+                        <h4 class="fw-bold mb-3 text-dark">{{ user.username }}</h4>
+                    {% else %}
+                        <i class="bi bi-person-circle profile-icon mb-3"></i>
+                        <h4 class="fw-bold mb-3 text-muted">Joueur Invité</h4>
+                    {% endif %}
+                    
+                    <div class="my-4">
+                        <span class="level-badge-large">
+                            <i class="bi bi-award-fill me-2"></i>
+                            Niveau <span class="fw-bolder h4 mb-0">{{ player_level|default:1 }}</span>
+                        </span>
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <div class="text-start mx-auto" style="max-width: 300px;">
+                        <p class="info-item">
+                            <i class="bi bi-star-fill me-2 text-warning"></i> 
+                            Total de points : <strong>{{ total_score|default:0 }} pts</strong>
+                        </p>
+                        <p class="info-item">
+                            <i class="bi bi-patch-check me-2 text-success"></i> 
+                            Quiz complétés : <strong>{{ quiz_completed_count|default:0 }}</strong>
+                        </p>
+                        
+                        {% if user.is_authenticated %}
+                            <p class="info-item">
+                                <i class="bi bi-clock-history me-2 text-secondary"></i>
+                                Membre depuis : {{ user.date_joined|date:"d M Y" }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr class="mt-4 mb-4">
+                <div class="text-center">
+                    <h6 class="text-primary mb-3 fw-bold">
+                        <i class="bi bi-qr-code-scan me-1"></i> Partage rapide
+                    </h6>
+                    
+                    <div class="qr-code-area mx-auto" style="max-width: 120px; padding: 5px;">
+                        <img src="{% static 'qrcodes/'|add:user.username|add:'_qr.png' %}" 
+                             alt="QR Code de {{ user.username|default:'invité' }}" 
+                             class="img-fluid rounded">
+                    </div>
+                    <p class="small text-muted mt-2 mb-0">
+                        Scannez pour partager votre profil.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="glass-panel leaderboard-table-panel">
+                <h4 class="text-primary mb-4 fw-bold">
+                    <i class="bi bi-people-fill me-2"></i> Top 5 des Utilisateurs
+                </h4>
+                
+                <div class="table-responsive">
+                    <table class="table leaderboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th>Utilisateur</th>
+                                <th class="text-center">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in top_scores %}
+                            <tr class="{% if entry.username == user.username %}table-primary fw-bold{% endif %}">
+                                <td>
+                                    {% if forloop.counter == 1 %}
+                                        <i class="bi bi-trophy-fill text-warning me-2"></i> 1
+                                    {% elif forloop.counter == 2 %}
+                                        <i class="bi bi-trophy-fill text-secondary me-2"></i> 2
+                                    {% elif forloop.counter == 3 %}
+                                        <i class="bi bi-trophy-fill text-danger me-2"></i> 3
+                                    {% else %}
+                                        {{ forloop.counter }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <i class="bi bi-person-fill me-2"></i> {{ entry.username }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success bg-gradient py-2 px-3 shadow-sm">{{ entry.score }} pts</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    <i class="bi bi-emoji-frown me-2"></i> Aucun score enregistré pour le moment.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center mt-4">
+                     <a href="{% url 'leaderboard' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-chevron-double-right me-2"></i> Voir le classement complet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const confettiCount = 100;
+const confetti = [];
+
+// Facteur global pour ralentir les confettis (0 = arrêt, 1 = vitesse d'origine)
+const speedFactor = 0.35;
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Crée les confettis
+for(let i = 0; i < confettiCount; i++){
+    confetti.push({
+        x: random(0, canvas.width),
+        y: random(0, canvas.height),
+        r: random(2, 6),
+        d: random(1, 5),
+        color: `hsl(${random(0, 360)}, 100%, 50%)`,
+        tilt: random(-10, 10),
+        tiltAngleIncrement: random(0.02, 0.06) * speedFactor, // réduit l'incrément d'inclinaison
+        tiltAngle: 0
+    });
+}
+
+// Dessine les confettis
+function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach((c, i) => {
+        c.tiltAngle += c.tiltAngleIncrement;
+        // Mouvement vertical et horizontal réduits par speedFactor
+        c.y += ((Math.cos(c.d) + 3 + c.r/2)/2) * speedFactor;
+        c.x += Math.sin(c.d) * speedFactor;
+        c.tilt = Math.sin(c.tiltAngle) * 15;
+
+        ctx.beginPath();
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt + c.r/2, c.y);
+        ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r/2);
+        ctx.stroke();
+
+        // Reset confetti s'il sort de l'écran
+        if(c.y > canvas.height){
+            confetti[i] = {
+                x: random(0, canvas.width),
+                y: -20, // repartir un peu plus haut pour un effet plus doux
+                r: c.r,
+                d: c.d,
+                color: c.color,
+                tilt: random(-10, 10),
+                tiltAngleIncrement: (random(0.02, 0.06) * speedFactor),
+                tiltAngle: c.tiltAngle
+            };
+        }
+    });
+
+    requestAnimationFrame(drawConfetti);
+}
+
+drawConfetti();
+
+// Ajuste le canvas lors du redimensionnement
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
+{% endblock %}

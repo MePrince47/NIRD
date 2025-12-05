@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}Accueil - Quiz NIRD{% endblock %}
 
 {% block content %}
@@ -7,14 +7,20 @@
 
 <div class="container container-quiz">
     
-    <!-- Header avec logo -->
-    <div class="text-center mb-5">
-        <div class="d-flex justify-content-center align-items-center mb-3">
-            <i class="bi bi-patch-question-fill me-3" style="font-size: 3rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-            <h1 class="brand-header display-4">Bienvenue aux Quiz <strong>NIRD</strong></h1>
-        </div>
-        <p class="lead text-muted mb-0">La plateforme ultime pour tester et améliorer vos connaissances</p>
+   <!-- Header avec logo -->
+<div class="text-center mb-5">
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <i class="bi bi-patch-question-fill me-3" style="font-size: 3rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        <h1 class="brand-header display-4">Bienvenue aux Quiz <strong>NIRD</strong></h1>
     </div>
+    <p class="lead text-muted mb-2">La plateforme ultime pour tester et améliorer vos connaissances</p>
+    
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" 
+         alt="Logo NIRD" 
+         class="img-fluid"
+         style="max-width: 200px; height: auto;">
+</div>
 
     <!-- Section Utilisateur -->
     <div class="user-status-card text-center">
@@ -62,6 +68,10 @@
                     <a href="{% url 'signup' %}" class="btn btn-outline-success btn-lg">
                         <i class="bi bi-person-plus me-2"></i> Inscription
                     </a>
+
+                    <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#infoModal">
+                    Ouvrir le popup
+                </button> -->
                 </div>
             </div>
         {% endif %}
@@ -70,12 +80,15 @@
     <!-- Section Caractéristiques -->
     <div class="row mb-5">
         <div class="col-md-4">
-            <div class="feature-card">
-                <i class="bi bi-graph-up-arrow feature-icon text-primary"></i>
-                <h5>Progression</h5>
-                <p class="text-muted">Suivez votre évolution et améliorez-vous</p>
-            </div>
+    <a href="{% url 'progression' %}" class="text-decoration-none">
+        <div class="feature-card">
+            <i class="bi bi-graph-up-arrow feature-icon text-primary"></i>
+            <h5>Progression</h5>
+            <p class="text-muted">Suivez votre évolution et améliorez-vous</p>
         </div>
+    </a>
+</div>
+
         <div class="col-md-4">
     <a href="{% url 'start_quiz' 1 %}" class="text-decoration-none">
         <div class="feature-card p-4 shadow-sm rounded h-100 text-center">
@@ -85,14 +98,16 @@
         </div>
     </a>
 </div>
-
         <div class="col-md-4">
-            <div class="feature-card">
-                <i class="bi bi-people feature-icon text-success"></i>
-                <h5>Communauté</h5>
-                <p class="text-muted">Comparez vos scores avec d'autres joueurs</p>
-            </div>
+            <a href="{% url 'chat' %}" class="text-decoration-none">
+                <div class="feature-card hover-shadow p-4 rounded text-center" style="transition: transform 0.3s ease;">
+                    <i class="bi bi-people feature-icon text-success display-4 mb-3"></i>
+                    <h5 class="fw-bold">Communauté</h5>
+                    <p class="text-muted">Comparez vos scores avec d'autres joueurs</p>
+                </div>
+            </a>
         </div>
+
     </div>
 
     <!-- Section Quiz -->
@@ -209,6 +224,66 @@
         {% endif %}
     </div>
     
+
+    {% load static %}
+<style>
+/* --- Styles de la Carte du Joueur --- */
+.player-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Bordure légère pour l'effet de verre */
+    padding: 30px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    overflow: hidden; /* Empêche les éléments de dépasser les bords arrondis */
+}
+
+.player-card:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bs-warning); /* Bordure jaune pour mettre en évidence */
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3);
+}
+
+.level-badge-large {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    background: linear-gradient(45deg, #0d6efd, #007bff);
+    color: white;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4);
+}
+
+.qr-code-area {
+    background-color: white;
+    padding: 10px;
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code-area img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+}
+</style>
+<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1;"></canvas>
+
+
+
+
+
+
     <!-- Footer -->
     <footer class="mt-5 pt-4 text-center text-muted border-top">
         <p class="mb-2">Quiz NIRD &copy; 2024 - Plateforme éducative interactive</p>
@@ -217,5 +292,342 @@
     
 </div>
 
+<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-glass">
+        <div class="modal-content border-0 overflow-hidden" style="
+            /* Styles Aero/Glassmorphism conservés */
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95) 0%,
+                rgba(248, 249, 250, 0.98) 100%
+            );
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+            border-radius: 28px;
+        ">
 
+            <button type="button" class="btn-close btn-close-glass position-absolute top-0 end-0 m-4" 
+                    data-bs-dismiss="modal" aria-label="Close" style="
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 12px;
+                padding: 12px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            ">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <div class="row g-0 flex-column-reverse flex-lg-row">
+
+                <div class="col-lg-6 d-flex flex-column p-5 position-relative">
+                    
+                    <div class="position-relative z-1">
+                        <div class="mb-4 text-center text-lg-start">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-3" 
+                                 style="
+                                    width: 60px; height: 60px;
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+                                 ">
+                                <i class="bi bi-stars text-white fs-4"></i>
+                            </div>
+                            <h2 class="fw-bold mb-1 fs-3" style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                            ">
+                                L'Héritage NIRD
+                            </h2>
+                            <p class="text-muted mb-0 small">
+                                Découvrez les trois étapes de votre quête.
+                            </p>
+                        </div>
+
+                        <div id="text-carousel" class="carousel slide" data-bs-interval="false">
+                            <div class="carousel-inner">
+                                
+                                <div class="carousel-item active">
+                                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-1-circle-fill me-2"></i> Fragment de Savoir</h5>
+                                    <p class="fs-5 mb-4 text-dark" style="line-height: 1.8;">
+                                        NIRD n'est pas qu'un simple quiz. C'est l'histoire de connaissances cachées. Chaque quiz est un Fragment de Savoir qui vous attend. Vous commencez par les fondations, la première clé du savoir.
+                                    </p>
+                                </div>
+                                
+                                <div class="carousel-item">
+                                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-2-circle-fill me-2"></i> Le Défi du Temps</h5>
+                                    <p class="fs-5 mb-4 text-dark" style="line-height: 1.8;">
+                                        Le défi ne réside pas seulement dans la réponse, mais dans la course contre le temps et contre les autres. Chaque bonne réponse vous rapproche du statut d'Expert NIRD. Ne perdez pas une seconde.
+                                    </p>
+                                </div>
+
+                                <div class="carousel-item">
+                                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-3-circle-fill me-2"></i> Vers la Maîtrise</h5>
+                                    <p class="fs-5 mb-4 text-dark" style="line-height: 1.8;">
+                                        Atteignez le sommet du classement ! Prouvez que vous méritez de détenir l'intégralité du savoir NIRD. Visualisez vos progrès et inspirez les autres. L'aventure commence ici, prouvez votre valeur !
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <button class="btn btn-lg w-100 mt-4 btn-primary-glow" data-bs-dismiss="modal" style="
+                            padding: 16px 32px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border: none;
+                            border-radius: 16px;
+                            color: white;
+                            font-weight: 600;
+                            font-size: 1.1rem;
+                            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+                            transition: all 0.3s ease;
+                        ">
+                            <i class="bi bi-play-circle me-2"></i>
+                            Démarrer la Quête !
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="col-lg-6 position-relative overflow-hidden" style="min-height: 300px;">
+                    
+                    <div id="imageCarousel" class="carousel slide h-100 carousel-fade" data-bs-ride="false" data-bs-interval="false">
+                        
+                        <div class="carousel-indicators position-absolute bottom-0 start-50 translate-middle-x mb-3 z-3">
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                        </div>
+
+                        <div class="carousel-inner h-100">
+                            <div class="carousel-item active h-100">
+                                <div class="h-100 d-flex align-items-center justify-content-center position-relative p-4" 
+                                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <img src="{% static 'images/icon.png' %}" 
+                                         class="d-block w-75 object-fit-contain carousel-img" 
+                                         alt="NIRD Platform"
+                                         style="filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3)); max-height: 250px;">
+                                </div>
+                            </div>
+                            <div class="carousel-item h-100">
+                                <div class="h-100 d-flex align-items-center justify-content-center position-relative p-4"
+                                     style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <img src="{% static 'images/icon2.png' %}" 
+                                         class="d-block w-75 object-fit-contain carousel-img" 
+                                         alt="Interactive Learning"
+                                         style="filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3)); max-height: 250px;">
+                                </div>
+                            </div>
+                            <div class="carousel-item h-100">
+                                <div class="h-100 d-flex align-items-center justify-content-center position-relative p-4"
+                                     style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <img src="{% static 'images/icon3.png' %}" 
+                                         class="d-block w-75 object-fit-contain carousel-img" 
+                                         alt="Progress Tracking"
+                                         style="filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3)); max-height: 250px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Précédent</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Suivant</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ... (Les styles .modal-dialog-glass, .btn-close-glass, .btn-primary-glow restent valides) ... */
+    
+    .modal-dialog-glass {
+        transform: translateY(-30px) scale(0.95);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal.show .modal-dialog-glass {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    .carousel-img {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); } /* Réduction de l'effet de flottement */
+    }
+
+    /* Rendre les contrôles du carrousel moins agressifs sur les côtés */
+    .carousel-control-prev, .carousel-control-next {
+        opacity: 0.8;
+    }
+    .carousel-control-prev:hover, .carousel-control-next:hover {
+        opacity: 1;
+    }
+    
+    /* Bouton de fermeture amélioré */
+    .btn-close-glass:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        transform: rotate(90deg) scale(1.1) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Synchronisation des textes */
+    #text-carousel .carousel-item {
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    /* Responsive pour que l'image ne soit pas trop étirée sur mobile */
+    @media (max-width: 992px) {
+        .col-lg-6:nth-child(2) { /* Colonne des images */
+            min-height: 250px;
+        }
+        .carousel-img {
+            max-height: 180px !important;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageCarousel = document.getElementById('imageCarousel');
+        const textCarousel = document.getElementById('text-carousel');
+        
+        // 1. Initialiser les carrousels sans auto-play
+        const bsImageCarousel = new bootstrap.Carousel(imageCarousel, {
+            interval: false,
+            wrap: true
+        });
+        const bsTextCarousel = new bootstrap.Carousel(textCarousel, {
+            interval: false,
+            wrap: true
+        });
+
+        // 2. Synchronisation des deux carrousels lors d'un slide
+        
+        // Synchroniser le texte avec l'image
+        imageCarousel.addEventListener('slide.bs.carousel', function (e) {
+            bsTextCarousel.to(e.to);
+        });
+
+        // Synchroniser l'image avec le texte (au cas où vous ajouteriez des contrôles au texte)
+        textCarousel.addEventListener('slide.bs.carousel', function (e) {
+            bsImageCarousel.to(e.to);
+        });
+
+        // 3. Animation de rotation du bouton de fermeture (conservée)
+        const closeBtn = document.querySelector('.btn-close-glass');
+        if (closeBtn) {
+            closeBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'rotate(90deg) scale(1.1)';
+            });
+            
+            closeBtn.addEventListener('mouseleave', function() {
+                this.style.transform = 'rotate(0) scale(1)';
+            });
+        }
+        
+        // 4. Effet de brillance sur le bouton (conservé si le CSS correspondant est là)
+        const btnGlow = document.querySelector('.btn-primary-glow');
+        if (btnGlow) {
+             btnGlow.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.5)';
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            btnGlow.addEventListener('mouseleave', function() {
+                this.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.4)';
+                this.style.transform = 'translateY(0)';
+            });
+        }
+    });
+</script>
+<script>
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const confettiCount = 100;
+const confetti = [];
+
+// Facteur global pour ralentir les confettis (0 = arrêt, 1 = vitesse d'origine)
+const speedFactor = 0.35;
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Crée les confettis
+for(let i = 0; i < confettiCount; i++){
+    confetti.push({
+        x: random(0, canvas.width),
+        y: random(0, canvas.height),
+        r: random(2, 6),
+        d: random(1, 5),
+        color: `hsl(${random(0, 360)}, 100%, 50%)`,
+        tilt: random(-10, 10),
+        tiltAngleIncrement: random(0.02, 0.06) * speedFactor, // réduit l'incrément d'inclinaison
+        tiltAngle: 0
+    });
+}
+
+// Dessine les confettis
+function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach((c, i) => {
+        c.tiltAngle += c.tiltAngleIncrement;
+        // Mouvement vertical et horizontal réduits par speedFactor
+        c.y += ((Math.cos(c.d) + 3 + c.r/2)/2) * speedFactor;
+        c.x += Math.sin(c.d) * speedFactor;
+        c.tilt = Math.sin(c.tiltAngle) * 15;
+
+        ctx.beginPath();
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt + c.r/2, c.y);
+        ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r/2);
+        ctx.stroke();
+
+        // Reset confetti s'il sort de l'écran
+        if(c.y > canvas.height){
+            confetti[i] = {
+                x: random(0, canvas.width),
+                y: -20, // repartir un peu plus haut pour un effet plus doux
+                r: c.r,
+                d: c.d,
+                color: c.color,
+                tilt: random(-10, 10),
+                tiltAngleIncrement: (random(0.02, 0.06) * speedFactor),
+                tiltAngle: c.tiltAngle
+            };
+        }
+    });
+
+    requestAnimationFrame(drawConfetti);
+}
+
+drawConfetti();
+
+// Ajuste le canvas lors du redimensionnement
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 {% endblock %}

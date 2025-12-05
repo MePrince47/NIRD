@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}Question - Quiz NIRD{% endblock %}
 
 {% block content %}
@@ -84,65 +84,104 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.12);
 }
 </style>
+<canvas id="confetti-canvas" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1;"></canvas>
 
 <div class="container mt-5">
 
-   <div class="banner position-relative">
+<!-- Bannière -->
+<div class="banner position-relative">
     <div class="d-flex align-items-center justify-content-center">
         <i class="bi bi-rocket-takeoff-fill h2 me-2"></i>
         <h1 class="fw-bold mb-0">Quiz NIRD - Le Défi</h1>
     </div>
     <p class="fs-5 mb-0">Concentrez-vous ! Chaque seconde compte.</p>
     
-    <a href="{% url 'home' %}" class="btn btn-outline-light position-absolute top-0 end-0 m-3 shadow-sm d-flex align-items-center" title="Retour à l'accueil">
+    <a href="{% url 'home' %}" 
+       class="btn btn-outline-light position-absolute top-0 end-0 m-3 shadow-sm d-flex align-items-center" 
+       title="Retour à l'accueil">
         <i class="bi bi-house-door-fill me-2"></i> Accueil
     </a>
 </div>
+<style>
+    .avatar-float {
+    animation: float 3s ease-in-out infinite;
+}
 
-    <div class="question-box">
-        <!-- Timer -->
-        <div class="d-flex justify-content-center mb-4">
-            <span class="badge timer-badge" id="timer-badge">
-                <i class="bi bi-clock-fill me-2"></i> <span id="timer">{{ time_limit }}</span> s
-            </span>
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+</style>
+<div class="question-box" style="position: relative; z-index:1;">
+
+    <div class="row align-items-center">
+
+        <!-- IMAGE À GAUCHE -->
+        <div class="col-md-4 text-center mb-4">
+            <img src="{% static 'images/avatar.png' %}" 
+     alt="Avatar"
+     class="img-fluid avatar-float"
+     style="max-height: 350px; object-fit: contain;">
+
         </div>
 
-        <!-- Question -->
-        <h2 class="mb-5 text-dark fw-bold text-center">
-            <span class="text-primary me-2">Q:</span> {{ question.text }}
-        </h2>
+        <!-- ZONE DE DROITE : Timer + Question + Réponses -->
+        <div class="col-md-8">
 
-        {% if error %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> Erreur : {{ error }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Timer -->
+            <div class="d-flex justify-content-center mb-4">
+                <span class="badge timer-badge" id="timer-badge">
+                    <i class="bi bi-clock-fill me-2"></i> <span id="timer">{{ time_limit }}</span> s
+                </span>
+            </div>
+
+            <!-- Question -->
+            <h2 class="mb-5 text-dark fw-bold text-center">
+                <span class="text-primary me-2">Q:</span> {{ question.text }}
+            </h2>
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Erreur : {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <!-- Formulaire réponses -->
+            <form method="post" id="quiz-form" class="row">
+                {% csrf_token %}
+                <div class="col-12">
+                    {% for answer in question.answers %}
+                    <input type="radio" class="btn-check" name="answer"
+                           id="answer{{ forloop.counter }}" value="{{ forloop.counter0 }}" autocomplete="off">
+
+                    <label class="option-card p-3 d-block shadow-sm" for="answer{{ forloop.counter }}">
+                        <div class="d-flex align-items-center">
+
+                            <span class="badge bg-primary-subtle text-primary me-3 fs-5">
+                                {{ forloop.counter }}
+                            </span>
+
+                            <span class="answer-text">{{ answer }}</span>
+
+                        </div>
+                    </label>
+
+                    {% endfor %}
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-lg">
+                        <i class="bi bi-check-circle-fill me-2"></i> Valider ma réponse
+                    </button>
+                </div>
+            </form>
+
         </div>
-        {% endif %}
-
-        <!-- Formulaire réponses -->
-        <form method="post" id="quiz-form" class="row">
-            {% csrf_token %}
-            <div class="col-12">
-                {% for answer in question.answers %}
-                <input type="radio" class="btn-check" name="answer" id="answer{{ forloop.counter }}" value="{{ forloop.counter0 }}" autocomplete="off">
-                <label class="option-card p-3 d-block shadow-sm" for="answer{{ forloop.counter }}">
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-primary-subtle text-primary me-3 fs-5">
-                            {{ forloop.counter|add:"0"|slice:"1" }}
-                        </span>
-                        <span class="answer-text">{{ answer }}</span>
-                    </div>
-                </label>
-                {% endfor %}
-            </div>
-            
-            <div class="col-12 mt-4">
-                <button type="submit" class="btn btn-primary btn-lg w-100 shadow-lg">
-                    <i class="bi bi-check-circle-fill me-2"></i> Valider ma réponse
-                </button>
-            </div>
-        </form>
     </div>
+</div>
 </div>
 
 <script>
@@ -173,5 +212,151 @@ body {
             }
         }
     }, 1000);
+
+    
 </script>
+
+
+<script>
+    // Liste des avatars disponibles
+    const avatars = [
+        "{% static 'images/avatar.png' %}",
+        "{% static 'images/avatar1.png' %}",
+        "{% static 'images/avatar3.png' %}",
+        "{% static 'images/avatar4.png' %}",
+        "{% static 'images/avatar5.png' %}",
+        "{% static 'images/avatar6.png' %}",
+        "{% static 'images/avatar7.png' %}",
+        "{% static 'images/avatar8.png' %}"
+    ];
+
+    const avatarImg = document.querySelector('.avatar-float');
+
+    function changeAvatar() {
+        const randomIndex = Math.floor(Math.random() * avatars.length);
+        // Animation de fondu
+        avatarImg.style.opacity = 0;
+        setTimeout(() => {
+            avatarImg.src = avatars[randomIndex];
+            avatarImg.style.opacity = 1;
+        }, 300);
+    }
+
+    // Changer l'avatar toutes les 3 secondes
+    setInterval(changeAvatar, 2000);
+</script>
+
+<style>
+    .avatar-float {
+        transition: opacity 0.5s ease, transform 1s ease-in-out;
+    }
+
+    /* Optionnel : effet flottant subtil */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .avatar-float {
+        animation: float 5s ease-in-out infinite;
+    }
+</style>
+
+<script>
+const backgroundSound = new Audio("{% static 'audio/select.mp3' %}");
+backgroundSound.loop = true; // lecture en boucle
+backgroundSound.volume = 0.3; // volume subtil
+
+// Fonction pour démarrer le son après interaction
+function startBackgroundSound() {
+    backgroundSound.play().catch(e => console.log("Lecture bloquée : ", e));
+    // On retire l'écouteur pour ne jouer qu'une fois
+    document.removeEventListener('click', startBackgroundSound);
+    document.removeEventListener('keydown', startBackgroundSound);
+}
+
+// On attend le premier clic ou touche
+document.addEventListener('click', startBackgroundSound);
+document.addEventListener('keydown', startBackgroundSound);
+</script>
+
+
+<script>
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const confettiCount = 100;
+const confetti = [];
+
+// Facteur global pour ralentir les confettis (0 = arrêt, 1 = vitesse d'origine)
+const speedFactor = 0.35;
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Crée les confettis
+for(let i = 0; i < confettiCount; i++){
+    confetti.push({
+        x: random(0, canvas.width),
+        y: random(0, canvas.height),
+        r: random(2, 6),
+        d: random(1, 5),
+        color: `hsl(${random(0, 360)}, 100%, 50%)`,
+        tilt: random(-10, 10),
+        tiltAngleIncrement: random(0.02, 0.06) * speedFactor, // réduit l'incrément d'inclinaison
+        tiltAngle: 0
+    });
+}
+
+// Dessine les confettis
+function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach((c, i) => {
+        c.tiltAngle += c.tiltAngleIncrement;
+        // Mouvement vertical et horizontal réduits par speedFactor
+        c.y += ((Math.cos(c.d) + 3 + c.r/2)/2) * speedFactor;
+        c.x += Math.sin(c.d) * speedFactor;
+        c.tilt = Math.sin(c.tiltAngle) * 15;
+
+        ctx.beginPath();
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt + c.r/2, c.y);
+        ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r/2);
+        ctx.stroke();
+
+        // Reset confetti s'il sort de l'écran
+        if(c.y > canvas.height){
+            confetti[i] = {
+                x: random(0, canvas.width),
+                y: -20, // repartir un peu plus haut pour un effet plus doux
+                r: c.r,
+                d: c.d,
+                color: c.color,
+                tilt: random(-10, 10),
+                tiltAngleIncrement: (random(0.02, 0.06) * speedFactor),
+                tiltAngle: c.tiltAngle
+            };
+        }
+    });
+
+    requestAnimationFrame(drawConfetti);
+}
+
+drawConfetti();
+
+// Ajuste le canvas lors du redimensionnement
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
+
+
 {% endblock %}
